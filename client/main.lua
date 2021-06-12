@@ -6,6 +6,9 @@ raceLap = 1
 finishLine = true
 activeRace = {}
 startPoint = nil
+timeTracking = {}
+raceId = 1
+startTime = 0
 CreateThread(function()
 	while true do
 		-- draw every frame
@@ -26,6 +29,7 @@ CreateThread(function()
 			if GetDistanceBetweenCoords(position.x, position.y, position.z, coords.x, coords.y, coords.z, 0 , false) < 25.0 then
 				-- Passed the checkpoint, delete map blip and checkpoint
 				RemoveBlip(checkpoint[checkPos])
+				-- addTimeEvent()
 				checkPos = checkPos + 1
 				if raceLap <= activeRace.Config.Laps then
 					if activeRace.Markers[checkPos] == nil  then
@@ -47,7 +51,7 @@ CreateThread(function()
 						TriggerEvent('chat:addMessage', {
 							color = { 255, 0, 0},
 							multiline = true,
-							args = {"Me", "adding finish line" }
+							args = {"Me", "adding finish line" .. GetGameTimer() }
 						})
 						if activeRace.Config.Type == 'Sprint' then
 							finishLine = true
@@ -58,12 +62,7 @@ CreateThread(function()
 						end
 					end
 				else
-					resetFlags()
-					TriggerEvent('chat:addMessage', {
-						color = { 255, 0, 0},
-						multiline = true,
-						args = {"Me", "End of Race"}
-					})
+					finishRace()
 				end
 			end
 		end
@@ -80,14 +79,14 @@ RegisterCommand("race",function(source,args)
 	TriggerEvent('chat:addMessage', {
 	  color = { 255, 0, 0},
 	  multiline = true,
-	  args = {"Me", "race started"}
+	  args = {"Me", "race started" .. GetGameTimer()}
 	})
 	startRace()
 end)
 
 RegisterCommand("setrace",function(source,args)
     local player = GetPlayerPed(-1)
-	activeRace = Races[1]
+	activeRace = Races[raceId]
 	startPoint = AddBlipForCoord(activeRace.Markers[1].x, activeRace.Markers[1].y, activeRace.Markers[1].z)
 	SetBlipRoute(startPoint, true)
 	SetBlipRouteColour(startPoint,2)
@@ -125,14 +124,30 @@ function startRace()
 	end
 	SetBlipRoute(checkpoint[checkPos], true)
 	SetBlipRouteColour(checkpoint[checkPos],2)
+	startTime = GetGameTimer()
+	TriggerServerEvent('racing:start',startTime)
 	TriggerEvent('chat:addMessage', {
 	  color = { 255, 0, 0},
 	  multiline = true,
 	  args = {"Me", "GO"}
 	})
-
 end
 
+function finishRace()
+	local total = DecimalsToMinutes((GetGameTimer() - startTime))
+	TriggerEvent('chat:addMessage', {
+		color = { 255, 0, 0},
+		multiline = true,
+		args = {"Me", 'Start Time' .. startTime}
+	})
+	TriggerEvent('chat:addMessage', {
+		color = { 255, 0, 0},
+		multiline = true,
+		args = {"Me", 'End Time' .. GetGameTimer()}
+	})
+	TriggerServerEvent('racing:finish', total,raceId)
+	resetFlags()
+end
 
 function resetFlags()
 	checkPos = 1
@@ -141,4 +156,39 @@ function resetFlags()
 	finishLine = false
 	raceLap = 1
 	activeRace = {}
+	startTime = 0
+end
+
+
+function checkPointEvent()
+
+end
+
+
+RegisterNetEvent("racing:finishClient")
+AddEventHandler("racing:finishClient", function()
+
+end)
+RegisterNetEvent("racing:startClient")
+AddEventHandler("racing:finishClient", function()
+
+end)
+
+function dump(o)
+	if type(o) == 'table' then
+	   local s = '{ '
+	   for k,v in pairs(o) do
+		  if type(k) ~= 'number' then k = '"'..k..'"' end
+		  s = s .. '['..k..'] = ' .. dump(v) .. ','
+	   end
+	   return s .. '} '
+	else
+	   return tostring(o)
+	end
+ end
+
+function DecimalsToMinutes(dec)
+	local ms = tonumber(dec)
+	ms = ms/1000
+	return math.floor(ms / 100)..":"..(ms % 100)
 end
