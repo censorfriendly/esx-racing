@@ -7,7 +7,7 @@ Races = {
     {
         Config = {
             Laps = 1,
-            Type = Sprint
+            Type = 'Sprint'
         },
         Markers = {
             {

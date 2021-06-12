@@ -31,7 +31,7 @@ CreateThread(function()
 						checkPos = 1
 						raceLap = raceLap + 1
 					end
-					if activeRace.Config.Type == Sprint and checkPos == #checkpoint then
+					if activeRace.Config.Type == 'Sprint' and checkPos == #checkpoint then
 						raceLap = raceLap + 1
 					end
 					SetBlipRoute(checkpoint[checkPos], true)
@@ -48,7 +48,7 @@ CreateThread(function()
 							multiline = true,
 							args = {"Me", "adding finish line" }
 						})
-						if activeRace.Config.Type == Sprint then
+						if activeRace.Config.Type == 'Sprint' then
 							finishLine = true
 						end
 						if not finishLine then
