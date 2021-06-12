@@ -1,4 +1,7 @@
-
+-- 
+-- Types Sprint/Circuit
+-- Laps 1-99
+-- Markers consist of x,y,z coords
 RacingConfig = {
 
 }

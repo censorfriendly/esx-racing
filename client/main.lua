@@ -5,6 +5,7 @@ raceStarted = false
 raceLap = 1
 finishLine = true
 activeRace = {}
+startPoint = nil
 CreateThread(function()
 	while true do
 		-- draw every frame
@@ -72,10 +73,52 @@ end)
 RegisterCommand("race",function(source,args)
     local player = GetPlayerPed(-1)
 	local checkpointType = 31
+	RemoveBlip(startPoint)
 	checkPos = 1
 	raceLap = 1
 	finishLine = false
+	TriggerEvent('chat:addMessage', {
+	  color = { 255, 0, 0},
+	  multiline = true,
+	  args = {"Me", "race started"}
+	})
+	startRace()
+end)
+
+RegisterCommand("setrace",function(source,args)
+    local player = GetPlayerPed(-1)
 	activeRace = Races[1]
+	startPoint = AddBlipForCoord(activeRace.Markers[1].x, activeRace.Markers[1].y, activeRace.Markers[1].z)
+	SetBlipRoute(startPoint, true)
+	SetBlipRouteColour(startPoint,2)
+	TriggerEvent('chat:addMessage', {
+	  color = { 255, 0, 0},
+	  multiline = true,
+	  args = {"Me", "path to race"}
+	})
+end)
+
+function startRace()
+	Wait(1000)
+	TriggerEvent('chat:addMessage', {
+	  color = { 255, 0, 0},
+	  multiline = true,
+	  args = {"Me", "3"}
+	})
+	Wait(1000)
+	TriggerEvent('chat:addMessage', {
+	  color = { 255, 0, 0},
+	  multiline = true,
+	  args = {"Me", "2"}
+	})
+	Wait(1000)
+	TriggerEvent('chat:addMessage', {
+	  color = { 255, 0, 0},
+	  multiline = true,
+	  args = {"Me", "1"}
+	})
+	Wait(1000)
+	raceStarted = true
 	
 	for i=checkPos, checkPos + 2 do 
 		checkpoint[i] = AddBlipForCoord(activeRace.Markers[i].x, activeRace.Markers[i].y, activeRace.Markers[i].z)
@@ -85,10 +128,11 @@ RegisterCommand("race",function(source,args)
 	TriggerEvent('chat:addMessage', {
 	  color = { 255, 0, 0},
 	  multiline = true,
-	  args = {"Me", "race started"}
+	  args = {"Me", "GO"}
 	})
-	raceStarted = true
-end)
+
+end
+
 
 function resetFlags()
 	checkPos = 1
