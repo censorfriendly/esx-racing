@@ -53,7 +53,8 @@ AddEventHandler('racing:start', function(raceId)
                         ['@best_lap'] = '',
                         ['@total_time'] = ''
                     })
-                    TriggerClientEvent('racing:startClient', -1)
+                    local xPlayer = ESX.GetPlayerFromIdentifier(getServerIdentifier(results[i].identifier))
+                    xPlayer.triggerEvent('racing:startClient')
                 end
                 MySQL.Async.execute('DELETE From racing_pending WHERE race_id = @race_id',{['@race_id'] = race_id})
             end
@@ -223,6 +224,12 @@ function GetIdentifierWithoutLicense(Identifier)
     return string.gsub(Identifier, "license", "")
 end
 
+function getServerIdentifier(Identifier)
+    a, b = string.match(Identifier, "(.*):(.*)")
+    print(a)
+    print(b)
+    return "license:" .. b
+end
 
 
 
