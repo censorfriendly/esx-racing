@@ -9,6 +9,10 @@ startPoint = nil
 timeTracking = {}
 raceId = 1
 startTime = 0
+finished = false
+lastLap = nil
+lapTime = nil
+
 CreateThread(function()
 	while true do
 		-- draw every frame
@@ -29,15 +33,22 @@ CreateThread(function()
 			if GetDistanceBetweenCoords(position.x, position.y, position.z, coords.x, coords.y, coords.z, 0 , false) < 25.0 then
 				-- Passed the checkpoint, delete map blip and checkpoint
 				RemoveBlip(checkpoint[checkPos])
-				-- addTimeEvent()
+				checkPointEvent()
+				if checkPos == 1 and raceLap > 1 then
+					lapEvent()
+				end
 				checkPos = checkPos + 1
-				if raceLap <= activeRace.Config.Laps then
+				if raceLap <= activeRace.Config.Laps and not finished  then
 					if activeRace.Markers[checkPos] == nil  then
 						checkPos = 1
-						raceLap = raceLap + 1
+						if raceLap < activeRace.Config.Laps then 
+							raceLap = raceLap + 1
+						else
+							finished = true
+						end
 					end
 					if activeRace.Config.Type == 'Sprint' and checkPos == #checkpoint then
-						raceLap = raceLap + 1
+						finished = true
 					end
 					SetBlipRoute(checkpoint[checkPos], true)
 					SetBlipRouteColour(checkpoint[checkPos],2)
@@ -76,12 +87,12 @@ RegisterCommand("race",function(source,args)
 	checkPos = 1
 	raceLap = 1
 	finishLine = false
-	TriggerEvent('chat:addMessage', {
-	  color = { 255, 0, 0},
-	  multiline = true,
-	  args = {"Me", "race started" .. GetGameTimer()}
-	})
-	startRace()
+	TriggerServerEvent('racing:start',raceId)
+end)
+
+
+RegisterCommand("joinRace",function(source,args)
+	TriggerServerEvent('racing:join',raceId)
 end)
 
 RegisterCommand("setrace",function(source,args)
@@ -125,7 +136,6 @@ function startRace()
 	SetBlipRoute(checkpoint[checkPos], true)
 	SetBlipRouteColour(checkpoint[checkPos],2)
 	startTime = GetGameTimer()
-	TriggerServerEvent('racing:start',startTime)
 	TriggerEvent('chat:addMessage', {
 	  color = { 255, 0, 0},
 	  multiline = true,
@@ -134,7 +144,7 @@ function startRace()
 end
 
 function finishRace()
-	local total = DecimalsToMinutes((GetGameTimer() - startTime))
+	local total = GetGameTimer() - startTime
 	TriggerEvent('chat:addMessage', {
 		color = { 255, 0, 0},
 		multiline = true,
@@ -145,7 +155,7 @@ function finishRace()
 		multiline = true,
 		args = {"Me", 'End Time' .. GetGameTimer()}
 	})
-	TriggerServerEvent('racing:finish', total,raceId)
+	TriggerServerEvent('racing:finish', total)
 	resetFlags()
 end
 
@@ -157,11 +167,30 @@ function resetFlags()
 	raceLap = 1
 	activeRace = {}
 	startTime = 0
+	lastLap = nil
+	finished = false
 end
 
 
 function checkPointEvent()
+	TriggerServerEvent('racing:checkpoint', checkPos, raceLap)
+end
 
+
+function lapEvent()
+	local baseTime = nil
+	if lapTime == nil then
+		baseTime = startTime
+	else
+		baseTime = lapTime
+	end
+	lapTime = GetGameTimer()
+	TriggerEvent('chat:addMessage', {
+		color = { 255, 0, 0},
+		multiline = true,
+		args = {"Me", 'New Lap time' .. (lapTime - baseTime)}
+	})
+	TriggerServerEvent('racing:lapevent', lapTime - baseTime)
 end
 
 
@@ -170,8 +199,8 @@ AddEventHandler("racing:finishClient", function()
 
 end)
 RegisterNetEvent("racing:startClient")
-AddEventHandler("racing:finishClient", function()
-
+AddEventHandler("racing:startClient", function()
+	startRace()
 end)
 
 function dump(o)

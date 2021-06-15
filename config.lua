@@ -3,14 +3,14 @@
 -- Laps 1-99
 -- Markers consist of x,y,z coords
 RacingConfig = {
-
+    kashacters = true  --Set false to not include character validation
 }
 
 Races = {
     {
         Config = {
-            Laps = 1,
-            Type = 'Sprint'
+            Laps = 2,
+            Type = 'Circuit'
         },
         Markers = {
             {
