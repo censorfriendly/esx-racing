@@ -12,6 +12,7 @@ startTime = 0
 finished = false
 lastLap = nil
 lapTime = nil
+guiEnabled = false
 
 CreateThread(function()
 	while true do
@@ -59,11 +60,6 @@ CreateThread(function()
 						local pos = (checkPos + 2) - #checkpoint
 						checkpoint[pos] = AddBlipForCoord(activeRace.Markers[pos].x, activeRace.Markers[pos].y, activeRace.Markers[pos].z)
 					else 
-						TriggerEvent('chat:addMessage', {
-							color = { 255, 0, 0},
-							multiline = true,
-							args = {"Me", "adding finish line" .. GetGameTimer() }
-						})
 						if activeRace.Config.Type == 'Sprint' then
 							finishLine = true
 						end
@@ -101,33 +97,27 @@ RegisterCommand("setrace",function(source,args)
 	startPoint = AddBlipForCoord(activeRace.Markers[1].x, activeRace.Markers[1].y, activeRace.Markers[1].z)
 	SetBlipRoute(startPoint, true)
 	SetBlipRouteColour(startPoint,2)
-	TriggerEvent('chat:addMessage', {
-	  color = { 255, 0, 0},
-	  multiline = true,
-	  args = {"Me", "path to race"}
+	SendNUIMessage({
+		openRacing = true
+	})
+end)
+
+
+RegisterCommand("raceApp",function(source,args)
+    local playerPed = PlayerPedId()
+	SetNuiFocus(true,true)
+	SetPedUsingActionMode(playerPed, -1, -1, 1)
+	SendNUIMessage({
+		raceApp = true
 	})
 end)
 
 function startRace()
-	Wait(1000)
-	TriggerEvent('chat:addMessage', {
-	  color = { 255, 0, 0},
-	  multiline = true,
-	  args = {"Me", "3"}
+	
+	SendNUIMessage({
+		countdown = true
 	})
-	Wait(1000)
-	TriggerEvent('chat:addMessage', {
-	  color = { 255, 0, 0},
-	  multiline = true,
-	  args = {"Me", "2"}
-	})
-	Wait(1000)
-	TriggerEvent('chat:addMessage', {
-	  color = { 255, 0, 0},
-	  multiline = true,
-	  args = {"Me", "1"}
-	})
-	Wait(1000)
+	Wait(3000)
 	raceStarted = true
 	
 	for i=checkPos, checkPos + 2 do 
@@ -136,24 +126,18 @@ function startRace()
 	SetBlipRoute(checkpoint[checkPos], true)
 	SetBlipRouteColour(checkpoint[checkPos],2)
 	startTime = GetGameTimer()
-	TriggerEvent('chat:addMessage', {
-	  color = { 255, 0, 0},
-	  multiline = true,
-	  args = {"Me", "GO"}
+	SendNUIMessage({
+		startrace = {
+			laps = activeRace.Config.Laps,
+			totalChecks = #activeRace.Markers
+		}
 	})
 end
 
 function finishRace()
 	local total = GetGameTimer() - startTime
-	TriggerEvent('chat:addMessage', {
-		color = { 255, 0, 0},
-		multiline = true,
-		args = {"Me", 'Start Time' .. startTime}
-	})
-	TriggerEvent('chat:addMessage', {
-		color = { 255, 0, 0},
-		multiline = true,
-		args = {"Me", 'End Time' .. GetGameTimer()}
+	SendNUIMessage({
+		endRace = true
 	})
 	TriggerServerEvent('racing:finish', total)
 	resetFlags()
@@ -171,11 +155,12 @@ function resetFlags()
 	finished = false
 end
 
-
 function checkPointEvent()
 	TriggerServerEvent('racing:checkpoint', checkPos, raceLap)
+	SendNUIMessage({
+		checkPoint = true
+	})
 end
-
 
 function lapEvent()
 	local baseTime = nil
@@ -185,14 +170,11 @@ function lapEvent()
 		baseTime = lapTime
 	end
 	lapTime = GetGameTimer()
-	TriggerEvent('chat:addMessage', {
-		color = { 255, 0, 0},
-		multiline = true,
-		args = {"Me", 'New Lap time' .. (lapTime - baseTime)}
-	})
 	TriggerServerEvent('racing:lapevent', lapTime - baseTime)
+	SendNUIMessage({
+		lapEvent = true
+	})
 end
-
 
 RegisterNetEvent("racing:finishClient")
 AddEventHandler("racing:finishClient", function()
@@ -221,3 +203,14 @@ function DecimalsToMinutes(dec)
 	ms = ms/1000
 	return math.floor(ms / 100)..":"..(ms % 100)
 end
+
+-- Race App Code beneath
+
+RegisterNUICallback('getTracks', function()
+	SendNUIMessage({
+		trackListEvent = true,
+		tracks = Races
+	})
+	
+	
+end)
