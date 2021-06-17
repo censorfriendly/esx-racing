@@ -4,7 +4,7 @@
     <div v-if="!joinedRace">
       <div v-for="(track,index) in pendingObject" :key="index">
           <div class="grid third center">
-            <div><h4 v-html="trackList[track.race_id].Config.Name"/></div>
+            <div><h4 v-html="trackObject[track.race_id - 1].Config.Name"/></div>
             <div><button @click="joinRace(track.race_id)" class="">Join Race</button></div>
             <div><button @click="mapRace(track.race_id)" class="">Map To Race</button></div>
           </div>
@@ -13,7 +13,7 @@
     <div v-else >
       <div>
         <button @click="getPlayersInRace">Refresh Racers List</button>
-        <h3>Active Race: <span v-html="trackList[race_id].Config.Name"/> </h3>
+        <h3>Active Race: <span v-html="trackObject[race_id - 1].Config.Name"/> </h3>
       </div>
     </div>
   </div>
@@ -24,15 +24,14 @@ import Nui from '../utils/Nui';
 export default {
   name: 'pending-screen',
   props: {
-    pendingList: [],
-    trackList: []
+    pendingList: []
   },
   data() {
     return {
-      trackObject : this.trackList,
+      trackObject :  this.$store.state.trackList,
       pendingObject: this.pendingList,
-      joinedRace: false,
-      race_id: 0
+      joinedRace: this.$store.state.raceApp.joinedRace,
+      race_id: this.$store.state.raceApp.race_id
     };
   },
   methods: {

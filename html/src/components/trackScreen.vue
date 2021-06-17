@@ -27,7 +27,7 @@ export default {
   },
   data() {
     return {
-      trackObject : this.trackList,
+      trackObject : this.$store.state.trackList,
       selectedRace : 0,
       formActive : false,
       config: {
@@ -49,6 +49,8 @@ export default {
           laps: this.config.laps
         })
         this.formActive = 0;
+        this.$store.state.raceApp.joinedRace = true;
+        this.$store.state.raceApp.race_id = this.selectedRace + 1;
       },
       clearRace: function() {
         this.formActive = 0;

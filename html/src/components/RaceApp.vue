@@ -10,10 +10,10 @@
         </div>
         <div class="interior-page">
             <div v-if="index==1">
-                <pendingScreen v-bind:trackList="trackList" v-bind:pendingList="pendingList" />
+                <pendingScreen v-bind:pendingList="pendingList" />
             </div>
             <div v-else-if="index==2">
-                <trackScreen v-bind:trackList="trackList" />
+                <trackScreen/>
             </div>
             <div v-else-if="index==3">
                 <leaderboardScreen />
@@ -39,7 +39,6 @@ export default {
   data() {
     return {
       index : 0,
-      trackList: {},
       pendingList: {},
       errmessage: ''
     };
@@ -63,7 +62,7 @@ export default {
       event => {
         const item = event.data || event.detail;
         if (item.trackListEvent) {
-            this.trackList = item.tracks;
+            this.$store.state.trackList = item.tracks;
         }
         if (item.racingListEvent) {
             this.pendingList = item.list;
@@ -74,6 +73,7 @@ export default {
       },
       false,
     );
+    console.log(this.$store);
   },
 
 };
