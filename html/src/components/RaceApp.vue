@@ -1,18 +1,19 @@
 <template>
   <div class="racing-app">
-        <h1>Race App Screen</h1>
+        <h1 @click="closeApp">Race App Screen</h1>
+        <p class="error" v-html="errmessage">
         <hr/>
         <div class="grid third center">
-            <div class="tab" :class="{active:index==1}" @click="index = 1">Pending Races</div>
-            <div class="tab" :class="{active:index==2}" @click="index = 2">Tracks</div>
-            <div class="tab" :class="{active:index==3}" @click="index = 3">Leaderboards</div>
+            <div class="tab" :class="{active:index==1}" @click="triggerTab(1)">Pending Races</div>
+            <div class="tab" :class="{active:index==2}" @click="triggerTab(2)">Tracks</div>
+            <div class="tab" :class="{active:index==3}" @click="triggerTab(3)">Leaderboards</div>
         </div>
         <div class="interior-page">
             <div v-if="index==1">
-                <pendingScreen />
+                <pendingScreen v-bind:trackList="trackList" v-bind:pendingList="pendingList" />
             </div>
             <div v-else-if="index==2">
-                <trackScreen />
+                <trackScreen v-bind:trackList="trackList" />
             </div>
             <div v-else-if="index==3">
                 <leaderboardScreen />
@@ -25,6 +26,7 @@
 import pendingScreen from './pendingScreen';
 import leaderboardScreen from './leaderboardScreen';
 import trackScreen from './trackScreen';
+import Nui from '../utils/Nui';
 export default {
   name: 'race-app',
   components: {
@@ -36,8 +38,42 @@ export default {
   },
   data() {
     return {
-      index : 1
+      index : 0,
+      trackList: {},
+      pendingList: {},
+      errmessage: ''
     };
+  },
+  methods: {
+      closeApp: function() {
+        Nui.send('closeApp',{})
+      },
+      triggerTab: function(i) {
+          if(i == 1){
+            Nui.send('getPendingRaces',{})
+          }
+          this.index = i;
+      }
+  },
+  mounted() {
+    Nui.send('getTracks',{})
+    Nui.send('getPendingRaces',{})
+    this.listener = window.addEventListener(
+      'message',
+      event => {
+        const item = event.data || event.detail;
+        if (item.trackListEvent) {
+            this.trackList = item.tracks;
+        }
+        if (item.racingListEvent) {
+            this.pendingList = item.list;
+        }
+        if (item.error) {
+            this.errmessage = item.message;
+        }
+      },
+      false,
+    );
   },
 
 };
@@ -64,5 +100,8 @@ export default {
         background-color: black;
         color: white;
     }
+}
+.error {
+    color:red;
 }
 </style>

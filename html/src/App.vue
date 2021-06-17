@@ -1,5 +1,5 @@
 <template>
-  <div id="app" :class="dynClass">
+  <div id="app" :class="[activeRacingClass,raceAppClass]">
     <countDown />
     <activeRace />
     <raceApp />
@@ -21,7 +21,8 @@ export default {
   },
   data() {
     return {
-      dynClass : ''
+      activeRacingClass : '',
+      raceAppClass : ''
     };
   },
   destroyed() {
@@ -33,13 +34,16 @@ export default {
       event => {
         const item = event.data || event.detail;
         if (item.openRacing) {  
-          this.dynClass = 'racing-active ';
+          this.activeRacingClass = 'racing-active ';
         }
         if(item.endRace) {
           setTimeout(this.closeAfterDelay, 5000)
         }
         if(item.raceApp) {
-          this.dynClass ='racing-app'
+          this.raceAppClass ='racing-app'
+        }
+        if(item.closeApp) {
+          this.raceAppClass = ''
         }
       },
       false,
@@ -47,7 +51,7 @@ export default {
   },
   methods: {
     closeAfterDelay: function() {
-      this.dynClass = '';
+      this.activeRacingClass = '';
     }
   },
 };

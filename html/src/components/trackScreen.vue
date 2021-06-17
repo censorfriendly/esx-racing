@@ -2,7 +2,11 @@
   <div class="trackScreen">
       <h3>Build track screen template</h3>
       <div v-for="(track,index) in trackObject" :key="index">
-          <h4 @click="setRace(index)" v-html="track.Config.Name"/>
+          <div class="grid third center">
+            <div><h4 v-html="track.Config.Name"/></div>
+            <div><button @click="setRace(index)" class="">Create Race</button></div>
+            <div><button class="">View Race</button></div>
+          </div>
       </div>
       <div class="form" :class="{active:formActive}">
           <label>No. of Laps</label>
@@ -19,31 +23,20 @@ import Nui from '../utils/Nui';
 export default {
   name: 'track-screen',
   props: {
-
+    trackList: []
   },
   data() {
     return {
-      trackObject : {},
+      trackObject : this.trackList,
       selectedRace : 0,
       formActive : false,
       config: {
-        laps: 1,
-        race_id: 1
+        laps: 1
       }
     };
   },
   mounted() {
-    Nui.send('getTracks',{})
-    this.listener = window.addEventListener(
-      'message',
-      event => {
-        const item = event.data || event.detail;
-        if (item.trackListEvent) {
-          this.trackObject = item.tracks
-        }
-      },
-      false,
-    );
+
   },
   methods: {
       setRace: function(index) {
@@ -51,6 +44,10 @@ export default {
         this.formActive = 1;
       },
       createRace: function() {
+        Nui.send('createRace',{
+          raceId: this.selectedRace + 1,
+          laps: this.config.laps
+        })
         this.formActive = 0;
       },
       clearRace: function() {

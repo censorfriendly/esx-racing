@@ -97,9 +97,6 @@ RegisterCommand("setrace",function(source,args)
 	startPoint = AddBlipForCoord(activeRace.Markers[1].x, activeRace.Markers[1].y, activeRace.Markers[1].z)
 	SetBlipRoute(startPoint, true)
 	SetBlipRouteColour(startPoint,2)
-	SendNUIMessage({
-		openRacing = true
-	})
 end)
 
 
@@ -114,6 +111,9 @@ end)
 
 function startRace()
 	
+	SendNUIMessage({
+		openRacing = true
+	})
 	SendNUIMessage({
 		countdown = true
 	})
@@ -205,12 +205,72 @@ function DecimalsToMinutes(dec)
 end
 
 -- Race App Code beneath
+-- Globals
 
+RegisterNUICallback('closeApp', function()
+	SetNuiFocus(false,false)
+	SendNUIMessage({
+		closeApp = true
+	})
+end)
+
+-- Track Screen
 RegisterNUICallback('getTracks', function()
 	SendNUIMessage({
 		trackListEvent = true,
 		tracks = Races
 	})
+end)
 	
-	
+RegisterNUICallback('createRace', function(params)
+	raceId = params.raceId
+	TriggerServerEvent('racing:join',raceId, true, params.laps)
+	activeRace = Races[raceId]
+
+end)
+
+-- Pending Race Screen
+
+
+RegisterNUICallback('getPendingRaces', function()
+	TriggerServerEvent('racing:pendingList')
+end)
+
+RegisterNetEvent("racing:racingList")
+AddEventHandler("racing:racingList", function(raceList)
+	SendNUIMessage({
+		racingListEvent = true,
+		list = raceList
+	})
+end)
+
+
+RegisterNUICallback('mapToRace', function(params)
+    local player = GetPlayerPed(-1)
+	activeRace = Races[tonumber(params.raceId)]
+	startPoint = AddBlipForCoord(activeRace.Markers[1].x, activeRace.Markers[1].y, activeRace.Markers[1].z)
+	SetBlipRoute(startPoint, true)
+	SetBlipRouteColour(startPoint,2)
+end)
+
+
+RegisterNUICallback('joinRace', function(params)
+	TriggerServerEvent('racing:join',params.raceId)
+end)
+
+
+
+-- Error handling function
+
+
+RegisterNetEvent("racing:racingerror")
+AddEventHandler("racing:racingerror", function(Cerror)
+	local code = Cerror.code
+	SendNUIMessage({
+		error = true,
+		message = Cerror.message
+	})
+	SendNUIMessage({
+		joinError = true
+	})
 end)

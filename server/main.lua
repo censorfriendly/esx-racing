@@ -16,19 +16,30 @@ AddEventHandler('racing:finish', function(finishTime)
 end)
 
 RegisterServerEvent('racing:join')
-AddEventHandler('racing:join', function(raceId)
+AddEventHandler('racing:join', function(raceId,setOwner,laps)
     local xPlayer = ESX.GetPlayerFromId(source)
     local usource = source
     identifier = xPlayer.getIdentifier()
     getProperIdentity(identifier, function(charid)
         MySQL.Async.fetchAll('SELECT * from racing_pending WHERE identifier LIKE  @identifier', {['@identifier'] = "%" .. GetIdentifierWithoutLicense(identifier) .. "%"}, function(results)
             if #results > 0 then
-                TriggerClientEvent('chatMessage', usource, "", {255,0,0}, 'Your Already in a race' .. #results .. ' quit race to join new /quitrace')
+                local errorCode = {code = 'joinError', message = 'Your Already in a race' .. #results .. ' quit race to join new /quitrace'}
+                TriggerClientEvent('racing:racingerror', usource,errorCode )
             else
-                MySQL.Async.execute('INSERT INTO `racing_pending` (`race_id`, `identifier`, `player_name`) VALUES (@race_id, @identifier, @player_name)', {
+                local owner = nil
+                if setOwner then
+                    owner = identifier
+                end
+                local lap = 1
+                if laps then
+                    lap = laps
+                end
+                MySQL.Async.execute('INSERT INTO `racing_pending` (`race_id`, `identifier`, `player_name`,`owner`,`laps`) VALUES (@race_id, @identifier, @player_name, @owner, @laps)', {
                     ['@race_id'] = raceId,
                     ['@identifier'] = charid,
-                    ['@player_name'] = xPlayer.getName()
+                    ['@player_name'] = xPlayer.getName(),
+                    ['@owner'] = owner,
+                    ['@laps'] = lap
                 })
                 TriggerClientEvent('chatMessage', usource, "", {0,0,0}, 'Joined Race ' .. raceId)
             end
@@ -92,7 +103,18 @@ AddEventHandler('racing:lapevent', function(lapTime)
         end
     end)
 end)
--- INSERT INTO `es_extended`.`racing_temp` (`race_id`, `identifier`, `track_time`, `placement`) VALUES ('1', '234234234', '1231', '1');
+
+
+
+RegisterServerEvent('racing:pendingList')
+AddEventHandler('racing:pendingList', function()
+    identifier = ESX.GetPlayerFromId(source).getIdentifier()
+    local usource = source
+    MySQL.Async.fetchAll('SELECT * FROM racing_pending WHERE owner != "NULL"', {}, function(results)
+        print(dump(results))
+        TriggerClientEvent('racing:racingList', usource, results)
+    end)
+end)
 
 
 
