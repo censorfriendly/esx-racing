@@ -15,6 +15,21 @@ AddEventHandler('racing:finish', function(finishTime)
     checkFinished()
 end)
 
+RegisterServerEvent('racing:quit')
+AddEventHandler('racing:quit', function()
+    identifier = ESX.GetPlayerFromId(source).getIdentifier()
+    usource = source
+    MySQL.Async.fetchAll('SELECT * from racing_pending WHERE identifier LIKE  @identifier', {['@identifier'] = "%" .. GetIdentifierWithoutLicense(identifier) .. "%"}, function(results)
+        if #results > 0 then
+            MySQL.Async.execute('DELETE from racing_pending WHERE id = @id',
+            {
+                ['@id'] = results[1].id
+            })
+            TriggerClientEvent('chatMessage', usource, "", {0,0,0}, 'left race')
+        end
+    end)
+end)
+
 RegisterServerEvent('racing:join')
 AddEventHandler('racing:join', function(raceId,setOwner,laps)
     local xPlayer = ESX.GetPlayerFromId(source)
