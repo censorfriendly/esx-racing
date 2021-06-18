@@ -15,9 +15,15 @@
         <button @click="getPlayersInRace">Refresh Racers List</button>
         <h3>Active Race: <span v-html="trackObject[race_id - 1].Config.Name"/> </h3>
         <div v-if="isOwner">
-            <button @click="joinRace(track.race_id)" class="">Start Race</button>
-            <button @click="mapRace(track.race_id)" class="">Map To Race</button>
-            <button @click="mapRace(track.race_id)" class="">Cancel Race</button>
+          <div>
+            <button @click="startRace(race_id)" class="">Start Race</button>
+          </div>
+          <div>
+            <button @click="mapRace(race_id)" class="">Map To Race</button>
+          </div>
+          <div>
+            <button @click="mapRace(race_id)" class="">Cancel Race</button>
+          </div>
         </div>
       </div>
     </div>
@@ -45,6 +51,9 @@ export default {
   methods: {
     mapRace: function(raceId) {
         Nui.send('mapToRace',{raceId})
+    },
+    startRace: function(raceId) {
+        Nui.send('startRace',{raceId})
     },
     joinRace: function(raceId) {
         Nui.send('joinRace',{raceId})

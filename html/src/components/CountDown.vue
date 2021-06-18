@@ -74,7 +74,7 @@ export default {
     left: 50%;
     width: 30%;
     transform: translateX(-50%);
-    top:5%;
+    top:25%;
     > div {
         display: flex;
         justify-content: space-between;

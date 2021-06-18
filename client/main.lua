@@ -78,7 +78,7 @@ CreateThread(function()
 end)
 
 RegisterCommand("race",function(source,args)
-    local player = GetPlayerPed(-1)
+    -- local player = GetPlayerPed(-1)
 	local checkpointType = 31
 	RemoveBlip(startPoint)
 	checkPos = 1
@@ -114,10 +114,22 @@ RegisterCommand("raceApp",function(source,args)
 end)
 
 function startRace()
-	
+	local checkpointType = 31
+	if(startPoint) then 
+		RemoveBlip(startPoint)
+	end
+	checkPos = 1
+	raceLap = 1
+	finishLine = false
+	SetNuiFocus(false,false)
 	SendNUIMessage({
-		openRacing = true
+		openRacing = true,
+		closeApp = true
 	})
+	ESX.ShowNotification("Race Countdown in 10 Seconds", true, false, '120')
+	Wait(5000)
+	ESX.ShowNotification("Race Countdown in 5 Seconds", true, false, '120')
+	Wait(5000)
 	SendNUIMessage({
 		countdown = true
 	})
@@ -292,6 +304,11 @@ end)
 
 RegisterNUICallback('joinRace', function(params, cb)
 	TriggerServerEvent('racing:join',params.raceId)
+	cb('ok');
+end)
+
+RegisterNUICallback('startRace', function(params, cb)
+	TriggerServerEvent('racing:start',params.raceId)
 	cb('ok');
 end)
 

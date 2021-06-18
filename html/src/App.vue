@@ -10,7 +10,7 @@
 import activeRace from './components/activeRace';
 import countDown from './components/CountDown';
 import raceApp from './components/RaceApp';
-// import Nui from './utils/Nui';
+import Nui from './utils/Nui';
 
 export default {
   name: 'app',
@@ -48,6 +48,13 @@ export default {
       },
       false,
     );
+    this.keyListener = window.addEventListener(
+      'keydown',
+      e => {
+        if (e.key == "Escape" || e.key == 'Backspace' || e.key == 'Delete' ) {
+          Nui.send('closeApp',{})
+        }
+    });
   },
   methods: {
     closeAfterDelay: function() {
@@ -73,7 +80,7 @@ export default {
   }
   &.racing-app {
     display: block;
-    .racing-app {
+    .rapp {
       display: block;
     }
   }

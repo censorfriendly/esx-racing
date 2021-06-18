@@ -1,5 +1,5 @@
 <template>
-  <div class="racing-app">
+  <div class="rapp">
         <h1 @click="closeApp">Race App Screen</h1>
         <p class="error" v-html="errmessage">
         <hr/>
@@ -94,7 +94,7 @@ export default {
 </script>
 
 <style lang="scss">
-.racing-app {
+.rapp {
     display: none;
     background-color: green;
     position: absolute;
@@ -114,7 +114,7 @@ export default {
         position: absolute;
         opacity: 0;
         transition: .5s;
-        visibility: none;
+        visibility: hidden;
         &.active {
             visibility: visible;
             opacity: 1;
