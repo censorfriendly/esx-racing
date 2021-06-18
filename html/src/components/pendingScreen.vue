@@ -14,6 +14,11 @@
       <div>
         <button @click="getPlayersInRace">Refresh Racers List</button>
         <h3>Active Race: <span v-html="trackObject[race_id - 1].Config.Name"/> </h3>
+        <div v-if="isOwner">
+            <button @click="joinRace(track.race_id)" class="">Start Race</button>
+            <button @click="mapRace(track.race_id)" class="">Map To Race</button>
+            <button @click="mapRace(track.race_id)" class="">Cancel Race</button>
+        </div>
       </div>
     </div>
   </div>
@@ -31,7 +36,10 @@ export default {
       trackObject :  this.$store.state.trackList,
       pendingObject: this.pendingList,
       joinedRace: this.$store.state.raceApp.joinedRace,
-      race_id: this.$store.state.raceApp.race_id
+      race_id: this.$store.state.raceApp.race_id,
+      identity: this.$store.state.global.identifier,
+      participatingRace: {},
+      isOwner : this.$store.state.raceApp.isOwner,
     };
   },
   methods: {
@@ -45,6 +53,25 @@ export default {
     },
     getPlayersInRace: function() {
       return "null";
+    },
+    getParticipatingRace: function() {
+      for(var x = 0; x < this.pendingObject.length; x++) {
+        if(this.pendingObject[x].race_id == this.race_id) {
+          this.participatingRace = x;
+          return x;
+        }
+      }
+      return false;
+    },
+    checkIfOwner: function() {
+      if(this.pendingObject.length > 0  && this.getParticipatingRace() !== false) {
+        var racerId = this.pendingObject[this.getParticipatingRace()].owner;
+        if(racerId == this.identity) {
+          this.isOwner = true;
+        } else {
+          this.isOwner = false;
+        }
+      }
     }
   },
   mounted() {
@@ -56,9 +83,15 @@ export default {
           this.joinedRace = false,
           this.race_id = 0
         }
+        if (item.racingListEvent) {
+            this.checkIfOwner();
+        }
       },
       false,
     );
+  },
+  computed: {
+
   }
 };
 </script>

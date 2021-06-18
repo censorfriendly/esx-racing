@@ -126,7 +126,6 @@ AddEventHandler('racing:pendingList', function()
     identifier = ESX.GetPlayerFromId(source).getIdentifier()
     local usource = source
     MySQL.Async.fetchAll('SELECT * FROM racing_pending WHERE owner != "NULL"', {}, function(results)
-        print(dump(results))
         TriggerClientEvent('racing:racingList', usource, results)
     end)
 end)
@@ -214,20 +213,21 @@ end
 
 -- Cleanup server start/stop
 
+AddEventHandler('onResourceStart', function(resource)
+	if resource == GetCurrentResourceName() then
+		Citizen.Wait(5000)
+        MySQL.Async.execute('TRUNCATE `racing_active`',{})
+        MySQL.Async.execute('TRUNCATE `racing_pending`',{})
+	end
+end)
 
+AddEventHandler('onResourceStop', function(resource)
+	if resource == GetCurrentResourceName() then
+        MySQL.Async.execute('TRUNCATE `racing_active`',{})
+        MySQL.Async.execute('TRUNCATE `racing_pending`',{})
+	end
+end)
 
--- AddEventHandler('onResourceStart', function(resource)
--- 	if resource == GetCurrentResourceName() then
--- 		Citizen.Wait(5000)
--- 		TriggerClientEvent('esx_policejob:updateBlip', -1)
--- 	end
--- end)
-
--- AddEventHandler('onResourceStop', function(resource)
--- 	if resource == GetCurrentResourceName() then
--- 		TriggerEvent('esx_phone:removeNumber', 'police')
--- 	end
--- end)
 function dump(o)
     if type(o) == 'table' then
        local s = '{ '

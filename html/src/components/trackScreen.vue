@@ -50,6 +50,7 @@ export default {
         })
         this.formActive = 0;
         this.$store.state.raceApp.joinedRace = true;
+        this.$store.state.raceApp.isOwner = true;
         this.$store.state.raceApp.race_id = this.selectedRace + 1;
       },
       clearRace: function() {

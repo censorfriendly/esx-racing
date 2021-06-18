@@ -10,7 +10,12 @@ export default new Vuex.Store({
     trackList: {},
     raceApp: {
         joinedRace: false,
-        race_id: 0
+        race_id: 0,
+        loading : false,
+        isOwner : false
+    },
+    global: {
+        identifier : null
     }
  },
  getters: {},

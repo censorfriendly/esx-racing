@@ -14,6 +14,7 @@ lastLap = nil
 lapTime = nil
 guiEnabled = false
 
+TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 CreateThread(function()
 	while true do
 		-- draw every frame
@@ -207,6 +208,12 @@ function DecimalsToMinutes(dec)
 	return math.floor(ms / 100)..":"..(ms % 100)
 end
 
+
+function GetIdentifierWithoutLicense(Identifier)
+    return string.gsub(Identifier, "license", "")
+end
+
+
 -- Race App Code beneath
 -- Globals
 
@@ -218,9 +225,9 @@ RegisterNUICallback('closeApp', function()
 end)
 
 
-RegisterNUICallback('createRace', function()
-	TriggerServerEvent('racing:quit')
-end)
+-- RegisterNUICallback('createRace', function()
+-- 	TriggerServerEvent('racing:quit')
+-- end)
 
 -- Track Screen
 RegisterNUICallback('getTracks', function()
@@ -229,20 +236,40 @@ RegisterNUICallback('getTracks', function()
 		tracks = Races
 	})
 end)
+
+RegisterNUICallback('getPendingRaces', function(data,cb)
+	TriggerServerEvent('racing:pendingList')
+	cb('ok');
+end)
+
+RegisterNUICallback('initApp', function(data,cb)
+	local data = ESX.GetPlayerData()
+
+	SendNUIMessage({
+		initApp = true,
+		identifier = data.identifier
+	})
+
+	SendNUIMessage({
+		trackListEvent = true,
+		tracks = Races
+	})
 	
-RegisterNUICallback('createRace', function(params)
+	TriggerServerEvent('racing:pendingList')
+	cb('ok');
+end)
+
+RegisterNUICallback('createRace', function(params,cb)
 	raceId = params.raceId
 	TriggerServerEvent('racing:join',raceId, true, params.laps)
 	activeRace = Races[raceId]
+	cb('ok');
 
 end)
 
 -- Pending Race Screen
 
 
-RegisterNUICallback('getPendingRaces', function()
-	TriggerServerEvent('racing:pendingList')
-end)
 
 RegisterNetEvent("racing:racingList")
 AddEventHandler("racing:racingList", function(raceList)
@@ -253,17 +280,19 @@ AddEventHandler("racing:racingList", function(raceList)
 end)
 
 
-RegisterNUICallback('mapToRace', function(params)
+RegisterNUICallback('mapToRace', function(params, cb)
     local player = GetPlayerPed(-1)
 	activeRace = Races[tonumber(params.raceId)]
 	startPoint = AddBlipForCoord(activeRace.Markers[1].x, activeRace.Markers[1].y, activeRace.Markers[1].z)
 	SetBlipRoute(startPoint, true)
 	SetBlipRouteColour(startPoint,2)
+	cb('ok');
 end)
 
 
-RegisterNUICallback('joinRace', function(params)
+RegisterNUICallback('joinRace', function(params, cb)
 	TriggerServerEvent('racing:join',params.raceId)
+	cb('ok');
 end)
 
 
