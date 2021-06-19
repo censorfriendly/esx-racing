@@ -155,7 +155,7 @@ function finishRace()
 	SendNUIMessage({
 		endRace = true
 	})
-	TriggerServerEvent('racing:finish', total)
+	TriggerServerEvent('racing:finish', total, raceId)
 	resetFlags()
 end
 
@@ -179,14 +179,14 @@ function checkPointEvent()
 end
 
 function lapEvent()
-	local baseTime = nil
-	if lapTime == nil then
-		baseTime = startTime
-	else
-		baseTime = lapTime
-	end
-	lapTime = GetGameTimer()
-	TriggerServerEvent('racing:lapevent', lapTime - baseTime)
+	-- local baseTime = nil
+	-- if lapTime == nil then
+	-- 	baseTime = startTime
+	-- else
+	-- 	baseTime = lapTime
+	-- end
+	-- lapTime = GetGameTimer()
+	-- TriggerServerEvent('racing:lapevent', lapTime - baseTime)
 	SendNUIMessage({
 		lapEvent = true
 	})
@@ -326,5 +326,17 @@ AddEventHandler("racing:racingerror", function(Cerror)
 	})
 	SendNUIMessage({
 		joinError = true
+	})
+end)
+
+
+-- Home Screen Post Race
+
+RegisterNetEvent("racing:raceData")
+AddEventHandler("racing:raceData", function(raceData)
+	print('sending race data');
+	SendNUIMessage({
+		raceData = true,
+		message = raceData
 	})
 end)

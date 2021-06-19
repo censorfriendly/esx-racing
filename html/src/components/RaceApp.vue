@@ -1,6 +1,6 @@
 <template>
   <div class="rapp">
-        <h1 @click="closeApp">Race App Screen</h1>
+        <h1 @click="index = 0 ">Home Screen</h1>
         <p class="error" v-html="errmessage">
         <hr/>
         <div class="grid third center">
@@ -9,16 +9,19 @@
             <div class="tab" :class="{active:index==3}" @click="triggerTab(3)">Leaderboards</div>
         </div>
         <div class="interior-page">
-                <div class="loading-screen" :class="{active:loadScreen}">
-                    <div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
-                </div>
-            <div v-if="index==1">
-                <pendingScreen v-bind:pendingList="pendingList" />
+            <div class="loading-screen" :class="{active:loadScreen}">
+                <div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
             </div>
-            <div v-else-if="index==2">
+            <div :class="{active:index==0}" class="screen-container">
+                <homeScreen />
+            </div>
+            <div :class="{active:index==1}" class="screen-container">
+                <pendingScreen/>
+            </div>
+            <div :class="{active:index==2}" class="screen-container">
                 <trackScreen/>
             </div>
-            <div v-else-if="index==3">
+            <div :class="{active:index==3}" class="screen-container">
                 <leaderboardScreen />
             </div>
         </div>
@@ -28,6 +31,7 @@
 <script>
 import pendingScreen from './pendingScreen';
 import leaderboardScreen from './leaderboardScreen';
+import homeScreen from './homeScreen';
 import trackScreen from './trackScreen';
 import Nui from '../utils/Nui';
 export default {
@@ -35,6 +39,7 @@ export default {
   components: {
       pendingScreen,
       leaderboardScreen,
+      homeScreen,
       trackScreen,
   },
   props: {
@@ -43,7 +48,6 @@ export default {
   data() {
     return {
       index : 0,
-      pendingList: {},
       errmessage: '',
       loadScreen : this.$store.state.raceApp.loading
     };
@@ -71,7 +75,8 @@ export default {
         }
         if (item.racingListEvent) {
             this.$store.state.raceApp.loading = false;
-            this.pendingList = item.list;
+            console.log(item.list);
+            this.$store.state.pendingList = item.list;
         }
         if (item.error) {
             this.errmessage = item.message;
@@ -82,12 +87,15 @@ export default {
         if (item.endRace) {
             this.$store.state.raceApp.joinedRace = false;
             this.$store.state.raceApp.race_id = 0;
+            this.index = 0;
             Nui.send('getPendingRaces',{})
+        }
+        if (item.startrace) {  
+            this.index = 0;
         }
       },
       false,
     );
-    console.log(this.$store);
   },
 
 };
@@ -103,6 +111,9 @@ export default {
     padding:15px;
     min-height: 25%;
     min-width: 400px;
+    h1 {
+      text-align: center;
+    }
     .interior-page {
         height: 500px;
         overflow-y:auto;
@@ -119,6 +130,18 @@ export default {
             visibility: visible;
             opacity: 1;
         }
+    }
+    .screen-container {
+      position: absolute;
+      top:0px;
+      left:0px;
+      visibility: hidden;
+      opacity: 0;
+      transition: all .5s;
+      &.active {
+        visibility: visible;
+        opacity: 1;
+      }
     }
 }
 .tab {

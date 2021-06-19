@@ -27,7 +27,6 @@ export default {
   },
   data() {
     return {
-      trackObject : this.$store.state.trackList,
       selectedRace : 0,
       formActive : false,
       config: {
@@ -56,6 +55,11 @@ export default {
       clearRace: function() {
         this.formActive = 0;
       }
+  },
+  computed: {
+    trackObject: function() {
+      return this.$store.state.trackList;
+    }
   }
 };
 </script>

@@ -138,7 +138,11 @@ export default {
             return (zero + num).slice(-digit);
         },
         checkPointEvent: function() {
-            this.checkPoint++;
+            if(this.checkPoint == this.totalCheckpoint) {
+                this.lapEvent();
+            } else {
+                this.checkPoint++;
+            }
         },
         lapEvent: function() {
             this.checkPoint = 1;
@@ -160,6 +164,7 @@ export default {
             if(!this.bestLapTime || timeElapsed < this.bestLapTime) {
                 this.bestLap = time;
                 this.bestLapTime = timeElapsed;
+                // Nui.send('setbestLap',{timeElapsed})
             }
             
         }

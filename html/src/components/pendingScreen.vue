@@ -1,28 +1,28 @@
 <template>
   <div>
     <h3>Build pending template</h3>
-    <div v-if="!joinedRace">
+    <div v-if="!joinedRace && !isOwner">
       <div v-for="(track,index) in pendingObject" :key="index">
           <div class="grid third center">
-            <div><h4 v-html="trackObject[track.race_id - 1].Config.Name"/></div>
-            <div><button @click="joinRace(track.race_id)" class="">Join Race</button></div>
-            <div><button @click="mapRace(track.race_id)" class="">Map To Race</button></div>
+            <div><h4 v-html="track.name"/></div>
+            <div><button @click="joinRace(track.id)" class="">Join Race</button></div>
+            <div><button @click="mapRace(track.id)" class="">Map To Race</button></div>
           </div>
       </div>
     </div>
     <div v-else >
       <div>
         <button @click="getPlayersInRace">Refresh Racers List</button>
-        <h3>Active Race: <span v-html="trackObject[race_id - 1].Config.Name"/> </h3>
+        <h3>Active Race: <span v-html="trackObject[raceId - 1].Config.Name"/> </h3>
         <div v-if="isOwner">
           <div>
-            <button @click="startRace(race_id)" class="">Start Race</button>
+            <button @click="startRace(raceId)" class="">Start Race</button>
           </div>
           <div>
-            <button @click="mapRace(race_id)" class="">Map To Race</button>
+            <button @click="mapRace(raceId)" class="">Map To Race</button>
           </div>
           <div>
-            <button @click="mapRace(race_id)" class="">Cancel Race</button>
+            <button @click="mapRace(raceId)" class="">Cancel Race</button>
           </div>
         </div>
       </div>
@@ -39,13 +39,7 @@ export default {
   },
   data() {
     return {
-      trackObject :  this.$store.state.trackList,
-      pendingObject: this.pendingList,
-      joinedRace: this.$store.state.raceApp.joinedRace,
-      race_id: this.$store.state.raceApp.race_id,
-      identity: this.$store.state.global.identifier,
       participatingRace: {},
-      isOwner : this.$store.state.raceApp.isOwner,
     };
   },
   methods: {
@@ -57,8 +51,8 @@ export default {
     },
     joinRace: function(raceId) {
         Nui.send('joinRace',{raceId})
-        this.joinedRace = true;
-        this.race_id = raceId;
+        this.$store.state.raceApp.joinedRace = true;
+        this.$store.state.raceApp.race_id = raceId;
     },
     getPlayersInRace: function() {
       return "null";
@@ -73,12 +67,14 @@ export default {
       return false;
     },
     checkIfOwner: function() {
-      if(this.pendingObject.length > 0  && this.getParticipatingRace() !== false) {
-        var racerId = this.pendingObject[this.getParticipatingRace()].owner;
-        if(racerId == this.identity) {
-          this.isOwner = true;
-        } else {
-          this.isOwner = false;
+      if(this.pendingObject.length > 0 && !this.isOwner) {
+        for (var x =0; x < this.pendingObject.length; x++)
+        {
+          if(this.identity.includes(this.pendingObject[x].owner)) {
+            this.$store.state.raceApp.race_id = this.pendingObject[x].id;
+            this.$store.state.raceApp.isOwner = true;
+            this.$store.state.raceApp.joinedRace = true;
+          }
         }
       }
     }
@@ -89,7 +85,7 @@ export default {
       event => {
         const item = event.data || event.detail;
         if (item.joinError) {
-          this.joinedRace = false,
+          this.$store.state.raceApp.joinedRace = false,
           this.race_id = 0
         }
         if (item.racingListEvent) {
@@ -100,7 +96,24 @@ export default {
     );
   },
   computed: {
-
+    pendingObject: function() {
+      return this.$store.state.pendingList;
+    },
+    identity: function() {
+      return this.$store.state.global.identifier;
+    },
+    trackObject: function() {
+      return this.$store.state.trackList;
+    },
+    isOwner: function() {
+      return this.$store.state.raceApp.isOwner;
+    },
+    joinedRace: function() {
+      return this.$store.state.raceApp.joinedRace;
+    },
+    raceId: function() {
+      return this.$store.state.raceApp.race_id;
+    }
   }
 };
 </script>
