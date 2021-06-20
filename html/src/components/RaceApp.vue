@@ -75,7 +75,6 @@ export default {
         }
         if (item.racingListEvent) {
             this.$store.state.raceApp.loading = false;
-            console.log(item.list);
             this.$store.state.pendingList = item.list;
         }
         if (item.error) {

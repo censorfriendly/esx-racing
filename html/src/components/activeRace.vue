@@ -52,6 +52,7 @@
 </template>
 
 <script>
+import Nui from '../utils/Nui';
 export default {
   name: 'active-race',
   props: {
@@ -138,11 +139,7 @@ export default {
             return (zero + num).slice(-digit);
         },
         checkPointEvent: function() {
-            if(this.checkPoint == this.totalCheckpoint) {
-                this.lapEvent();
-            } else {
-                this.checkPoint++;
-            }
+            this.checkPoint++;
         },
         lapEvent: function() {
             this.checkPoint = 1;
@@ -164,7 +161,12 @@ export default {
             if(!this.bestLapTime || timeElapsed < this.bestLapTime) {
                 this.bestLap = time;
                 this.bestLapTime = timeElapsed;
-                // Nui.send('setbestLap',{timeElapsed})
+                var raceId = this.$store.state.raceApp.race_id;
+                Nui.send('setBestLap',
+                {
+                    bestLap:timeElapsed,
+                    raceId:raceId
+                });
             }
             
         }
@@ -175,11 +177,6 @@ export default {
         event => {
             const item = event.data || event.detail;
             if (item.startrace) {  
-                this.pos = 1;
-                this.checkPoint = 0;
-                this.lap = 1;
-                this.totalLaps = item.startrace.laps;
-                this.totalCheckpoint = item.startrace.totalChecks;
                 this.start()
             }
             if (item.checkPoint) {
@@ -190,6 +187,16 @@ export default {
             }
             if(item.endRace) {
                 this.stop()
+            }
+            if(item.positionUpdate) {
+                this.pos = item.position;
+            }
+            if(item.setRaceConfig) {
+                this.pos = 1;
+                this.checkPoint = 0;
+                this.lap = 1;
+                this.totalLaps = item.raceConfig.laps;
+                this.totalCheckpoint = item.raceConfig.totalChecks;
             }
         },
         false,

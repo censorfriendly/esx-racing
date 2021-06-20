@@ -9,7 +9,7 @@ RacingConfig = {
 Races = {
     {
         Config = {
-            Laps = 2,
+            Laps = 3,
             Type = 'Circuit',
             Name = "Test Track"
         },

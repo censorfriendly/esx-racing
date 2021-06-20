@@ -6,13 +6,10 @@ raceLap = 1
 finishLine = true
 activeRace = {}
 startPoint = nil
-timeTracking = {}
 raceId = 1
-startTime = 0
 finished = false
 lastLap = nil
-lapTime = nil
-guiEnabled = false
+raceConfig = nil
 
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 CreateThread(function()
@@ -40,10 +37,10 @@ CreateThread(function()
 					lapEvent()
 				end
 				checkPos = checkPos + 1
-				if raceLap <= activeRace.Config.Laps and not finished  then
+				if raceLap <= raceConfig.laps and not finished  then
 					if activeRace.Markers[checkPos] == nil  then
 						checkPos = 1
-						if raceLap < activeRace.Config.Laps then 
+						if raceLap < raceConfig.laps then 
 							raceLap = raceLap + 1
 						else
 							finished = true
@@ -57,7 +54,7 @@ CreateThread(function()
 					
 					if activeRace.Markers[checkPos + 2] ~= nil and not finishLine then
 						checkpoint[checkPos + 2] = AddBlipForCoord(activeRace.Markers[checkPos + 2].x, activeRace.Markers[checkPos + 2].y, activeRace.Markers[checkPos + 2].z)
-					elseif activeRace.Config.Laps > raceLap and not finishLine then
+					elseif raceConfig.laps > raceLap and not finishLine then
 						local pos = (checkPos + 2) - #checkpoint
 						checkpoint[pos] = AddBlipForCoord(activeRace.Markers[pos].x, activeRace.Markers[pos].y, activeRace.Markers[pos].z)
 					else 
@@ -113,7 +110,9 @@ RegisterCommand("raceApp",function(source,args)
 	})
 end)
 
-function startRace()
+function startRace(race_Id)
+	raceId = race_Id
+	activeRace = Races[raceId]
 	local checkpointType = 31
 	if(startPoint) then 
 		RemoveBlip(startPoint)
@@ -124,7 +123,12 @@ function startRace()
 	SetNuiFocus(false,false)
 	SendNUIMessage({
 		openRacing = true,
-		closeApp = true
+		closeApp = true,
+		setRaceConfig = true,
+		raceConfig = {
+			laps = raceConfig.laps,
+			totalChecks = #activeRace.Markers
+		}
 	})
 	ESX.ShowNotification("Race Countdown in 10 Seconds", true, false, '120')
 	Wait(5000)
@@ -141,21 +145,17 @@ function startRace()
 	end
 	SetBlipRoute(checkpoint[checkPos], true)
 	SetBlipRouteColour(checkpoint[checkPos],2)
-	startTime = GetGameTimer()
 	SendNUIMessage({
-		startrace = {
-			laps = activeRace.Config.Laps,
-			totalChecks = #activeRace.Markers
-		}
+		startrace = true
 	})
 end
 
 function finishRace()
-	local total = GetGameTimer() - startTime
 	SendNUIMessage({
 		endRace = true
 	})
-	TriggerServerEvent('racing:finish', total, raceId)
+	-- Need to get a callback from ui to tell us race details
+	-- TriggerServerEvent('racing:finish', total, raceId)
 	resetFlags()
 end
 
@@ -166,27 +166,19 @@ function resetFlags()
 	finishLine = false
 	raceLap = 1
 	activeRace = {}
-	startTime = 0
 	lastLap = nil
 	finished = false
+	raceConfig = nil
 end
 
 function checkPointEvent()
-	TriggerServerEvent('racing:checkpoint', checkPos, raceLap)
+	TriggerServerEvent('racing:checkpoint',raceId, checkPos, raceLap)
 	SendNUIMessage({
 		checkPoint = true
 	})
 end
 
 function lapEvent()
-	-- local baseTime = nil
-	-- if lapTime == nil then
-	-- 	baseTime = startTime
-	-- else
-	-- 	baseTime = lapTime
-	-- end
-	-- lapTime = GetGameTimer()
-	-- TriggerServerEvent('racing:lapevent', lapTime - baseTime)
 	SendNUIMessage({
 		lapEvent = true
 	})
@@ -197,8 +189,17 @@ AddEventHandler("racing:finishClient", function()
 
 end)
 RegisterNetEvent("racing:startClient")
-AddEventHandler("racing:startClient", function()
-	startRace()
+AddEventHandler("racing:startClient", function(raceConf)
+	raceConfig = raceConf
+	startRace(raceConfig.id)
+end)
+
+RegisterNetEvent("racing:updatePos")
+AddEventHandler("racing:updatePos", function(position)
+	SendNUIMessage({
+		positionUpdate = true,
+		position = position
+	})
 end)
 
 function dump(o)
@@ -273,8 +274,8 @@ end)
 
 RegisterNUICallback('createRace', function(params,cb)
 	raceId = params.raceId
-	TriggerServerEvent('racing:join',raceId, true, params.laps)
 	activeRace = Races[raceId]
+	TriggerServerEvent('racing:join',raceId, true, params.laps)
 	cb('ok');
 
 end)
@@ -304,6 +305,8 @@ end)
 
 RegisterNUICallback('joinRace', function(params, cb)
 	TriggerServerEvent('racing:join',params.raceId)
+		raceId = params.raceId
+		activeRace = Races[raceId]
 	cb('ok');
 end)
 
@@ -339,4 +342,12 @@ AddEventHandler("racing:raceData", function(raceData)
 		raceData = true,
 		message = raceData
 	})
+end)
+
+-- Racing Screen
+
+RegisterNUICallback('setBestLap', function(params, cb)
+	print(dump(params));
+	TriggerServerEvent('racing:setBestLap',params.raceId, params.bestLap)
+	cb('ok');
 end)

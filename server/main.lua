@@ -4,19 +4,19 @@ activeRaces = {}
 pendingRaces = {}
 raceConfigs = {}
 
-table.insert(raceConfigs, { 
-    id = 1,
-    name = 'Test Track',
-    type = 'Sprint',
-    laps = 2,
-    started = false,
-    owner = ':fbe32bb51c7d686f36d903c66de8531e8d1db82c'
-})
-pendingRaces[1] = {}
-table.insert(pendingRaces[1], { 
-    player_name = 'fake racer',
-    identifier = ':fbe32bb51c7d686f36d903c66de8531e8d1db82c'
-})
+-- table.insert(raceConfigs, { 
+--     id = 1,
+--     name = 'Test Track',
+--     type = 'Sprint',
+--     laps = 2,
+--     started = false,
+--     owner = ':fbe32bb51c7d686f36d903c66de8531e8d1db82c'
+-- })
+-- pendingRaces[1] = {}
+-- table.insert(pendingRaces[1], { 
+--     player_name = 'fake racer',
+--     identifier = ':fbe32bb51c7d686f36d903c66de8531e8d1db82c'
+-- })
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 
 
@@ -35,8 +35,59 @@ end)
 
 RegisterServerEvent('racing:quit')
 AddEventHandler('racing:quit', function()
-    identifier = ESX.GetPlayerFromId(source).getIdentifier()
-    usource = source
+    xPlayer = ESX.GetPlayerFromId(source)
+    identifier = xPlayer.getIdentifier()
+    local ident = GetIdentifierWithoutLicense(identifier)
+    local quitRace = false
+    -- Check pending race
+    print('looking at quitting race')
+
+    for x = 1, #pendingRaces do 
+        if pendingRaces[x] ~= nil then
+            for y = 1, #pendingRaces[x] do
+                if pendingRaces[x][y].identifier == ident then 
+                    table.remove(pendingRaces[x],y)
+                    quitRace = true
+                    print('quit Pending Race')
+                    break
+                end
+            end
+        end
+        if raceConfigs[x] ~= nil then
+            if raceConfigs[x].owner == ident then 
+                table.remove(raceConfigs, x)
+                quitRace = true
+                print('quit setup of Race')
+            end
+        end
+        if quitRace then 
+            break
+        end
+    end
+
+    -- Check active race
+    if quitRace == false then 
+        for x = 1, #activeRaces do 
+            if activeRaces[x] ~= nil then
+                for y = 1, #activeRaces[x] do
+                    if activeRaces[x][y].identifier == ident then 
+                        table.remove(activeRaces[x],y)
+                        quitRace = true
+                        print('quit Active Race')
+                        break
+                    end
+                end
+            end
+            if quitRace then 
+                break
+            end
+        end
+    end
+    if quitRace then 
+        print('send quit message')
+        TriggerClientEvent('chatMessage', source, "", {0,0,0}, 'left race')
+    end
+
     -- MySQL.Async.fetchAll('SELECT * from racing_pending WHERE identifier LIKE  @identifier', {['@identifier'] = "%" .. GetIdentifierWithoutLicense(identifier) .. "%"}, function(results)
     --     if #results > 0 then
     --         MySQL.Async.execute('DELETE from racing_pending WHERE id = @id',
@@ -65,6 +116,7 @@ AddEventHandler('racing:join', function(raceId,setOwner,laps)
             started = false,
             owner = GetIdentifierWithoutLicense(identifier),
         }
+        raceConfigs[raceId] = {}
         table.insert(raceConfigs, rconf)
 
         pendingRaces[raceId] = {}
@@ -81,32 +133,6 @@ AddEventHandler('racing:join', function(raceId,setOwner,laps)
         }
         table.insert(pendingRaces[raceId], inObj)
     end
-
-    -- getProperIdentity(identifier, function(charid)
-    --     MySQL.Async.fetchAll('SELECT * from racing_pending WHERE identifier LIKE  @identifier', {['@identifier'] = "%" .. GetIdentifierWithoutLicense(identifier) .. "%"}, function(results)
-    --         if #results > 0 then
-    --             local errorCode = {code = 'joinError', message = 'Your Already in a race' .. #results .. ' quit race to join new /quitrace'}
-    --             TriggerClientEvent('racing:racingerror', usource,errorCode )
-    --         else
-    --             local owner = nil
-    --             if setOwner then
-    --                 owner = identifier
-    --             end
-    --             local lap = 1
-    --             if laps then
-    --                 lap = laps
-    --             end
-    --             MySQL.Async.execute('INSERT INTO `racing_pending` (`race_id`, `identifier`, `player_name`,`owner`,`laps`) VALUES (@race_id, @identifier, @player_name, @owner, @laps)', {
-    --                 ['@race_id'] = raceId,
-    --                 ['@identifier'] = charid,
-    --                 ['@player_name'] = xPlayer.getName(),
-    --                 ['@owner'] = owner,
-    --                 ['@laps'] = lap
-    --             })
-    --             TriggerClientEvent('chatMessage', usource, "", {0,0,0}, 'Joined Race ' .. raceId)
-    --         end
-    --     end)
-    -- end)
 end)
 
 RegisterServerEvent('racing:start')
@@ -120,74 +146,70 @@ AddEventHandler('racing:start', function(raceId)
             player_name = raceCopy[i].player_name,
             lap = 1,
             checkpoint = 1,
+            position = 1,
             best_lap = '',
             total_time = '',
             finished = false,
         }
         table.insert(activeRaces[raceId], inObj)
-        print(raceCopy[i].identifier)
         local xPlayer = ESX.GetPlayerFromIdentifier(getServerIdentifier(raceCopy[i].identifier))
-        xPlayer.triggerEvent('racing:startClient')
+        xPlayer.triggerEvent('racing:startClient',raceConfigs[raceId])
     end
-    print(dump(activeRaces[raceId]))
-    -- MySQL.Async.fetchAll('SELECT * FROM racing_pending WHERE race_id = @race_id ', {['@race_id'] = race_id},
-    --         function(results)
-    --             local raceKey = GetGameTimer()
-    --             for i = 1, #results do
-    --                 MySQL.Async.execute('INSERT INTO `racing_active` ( `race_id`, `race_key`, `identifier`, `lap`, `checkpoint`, `best_lap`, `total_time`, `player_name`) VALUES (@race_id, @race_key, @identifier, @lap, @checkpoint, @best_lap, @total_time, @player_name)', {
-    --                     ['@race_id'] = race_id,
-    --                     ['@race_key'] = raceKey,
-    --                     ['@identifier'] = results[i].identifier,
-    --                     ['@player_name'] = results[i].player_name,
-    --                     ['@lap'] = 1,
-    --                     ['@checkpoint'] = 1,
-    --                     ['@best_lap'] = '',
-    --                     ['@total_time'] = ''
-    --                 })
-    --                 local xPlayer = ESX.GetPlayerFromIdentifier(getServerIdentifier(results[i].identifier))
-    --                 xPlayer.triggerEvent('racing:startClient')
-    --             end
-    --             MySQL.Async.execute('DELETE From racing_pending WHERE race_id = @race_id',{['@race_id'] = race_id})
-    --         end
-    --     )
+    raceConfigs[raceId].started = true
 end)
 
 RegisterServerEvent('racing:checkpoint')
-AddEventHandler('racing:checkpoint', function(checkpoint, lap)
-    identifier = ESX.GetPlayerFromId(source).getIdentifier()
-    MySQL.Async.execute('UPDATE racing_active SET `checkpoint` = @checkpoint, `lap` = @lap WHERE identifier LIKE @identifier ',
-    {
-        ['@checkpoint'] = checkpoint,
-        ['@lap'] = lap,
-        ['@identifier'] = "%" .. GetIdentifierWithoutLicense(identifier) .. "%"
-    })
+AddEventHandler('racing:checkpoint', function(race_id, checkpoint, lap)
+    local xPlayer = ESX.GetPlayerFromId(source)
+    _identifier = xPlayer.getIdentifier()
+    local ppid = 1
+    for i = 1, #activeRaces[race_id] do
+        if activeRaces[race_id][i].identifier == GetIdentifierWithoutLicense(_identifier) then 
+            ppdid = i
+            activeRaces[race_id][i].checkpoint = checkpoint
+            activeRaces[race_id][i].lap = lap
+        end
+    end
+    local pos = 1
+    for i = 1, #activeRaces[race_id] do
+        if i ~= ppid and activeRaces[race_id][i].checkpoint >= checkpoint and activeRaces[race_id][i].lap >= lap  then 
+            pos = pos + 1
+        end
+    end
+    activeRaces[race_id][ppid].position = pos
+    xPlayer.triggerEvent('racing:updatePos',pos)
 end)
 
--- RegisterServerEvent('racing:lapevent')
--- AddEventHandler('racing:lapevent', function(lapTime)
---     identifier = ESX.GetPlayerFromId(source).getIdentifier()
---     local newlapTime = lapTime
---     MySQL.Async.fetchAll('SELECT * FROM racing_active WHERE identifier LIKE @identifier ',
---     {['@identifier'] = "%" .. GetIdentifierWithoutLicense(identifier) .. "%"}, function(result)
---         if result[1].best_lap ~= "" then
---             if newlapTime < tonumber(result[1].best_lap) then
---                 MySQL.Async.execute('UPDATE racing_active SET `best_lap` = @best_lap WHERE identifier LIKE @identifier ',{['@best_lap'] = newlapTime,['@identifier'] = "%" .. GetIdentifierWithoutLicense(identifier) .. "%"})
---             end
---         else
---             print('No previous laptime' .. newlapTime .. GetIdentifierWithoutLicense(identifier))
---             MySQL.Async.execute('UPDATE racing_active SET `best_lap` = @best_lap WHERE identifier LIKE @identifier ',{['@best_lap'] = newlapTime,['@identifier'] = "%" .. GetIdentifierWithoutLicense(identifier) .. "%"})
---         end
---     end)
--- end)
-
-
+RegisterServerEvent('racing:setBestLap')
+AddEventHandler('racing:setBestLap', function(race_id, bestLap)
+    local _identifier = ESX.GetPlayerFromId(source).getIdentifier()
+    local newLapTime = TimeStamp(bestLap)
+    for i = 1, #activeRaces[race_id] do
+        if activeRaces[race_id][i].identifier == GetIdentifierWithoutLicense(_identifier) then 
+            if(activeRaces[race_id][i].best_lap ~= '') then
+                local oldLapTime = TimeStamp(activeRaces[race_id][i].best_lap)
+                if(newLapTime < oldLapTime) then
+                    activeRaces[race_id][i].best_lap = bestLap;
+                end
+            else
+                activeRaces[race_id][i].best_lap = bestLap;
+            end
+        end
+    end
+end)
 
 RegisterServerEvent('racing:pendingList')
 AddEventHandler('racing:pendingList', function()
     identifier = ESX.GetPlayerFromId(source).getIdentifier()
     local usource = source
 
-    TriggerClientEvent('racing:racingList', usource, raceConfigs)
+    local unstartedRaces = {}
+    for i = 1, #raceConfigs do 
+        if raceConfigs[i].started == false then
+           table.insert(unstartedRaces,raceConfigs[i]) 
+        end
+    end
+    TriggerClientEvent('racing:racingList', usource, unstartedRaces)
     -- MySQL.Async.fetchAll('SELECT * FROM racing_pending WHERE owner != "NULL"', {}, function(results)
     --     TriggerClientEvent('racing:racingList', usource, results)
     -- end)
@@ -342,6 +364,22 @@ function getServerIdentifier(Identifier)
     return "license:" .. b
 end
 
+function TimeStamp(dateStringArg)
+	
+	local inYear, inMonth, inDay, inHour, inMinute, inSecond, inZone =      
+  string.match(dateStringArg, '^(%d%d%d%d)-(%d%d)-(%d%d)T(%d%d):(%d%d):(%d%d)(.-)$')
+
+	local zHours, zMinutes = string.match(inZone, '^(.-):(%d%d)$')
+		
+	local returnTime = os.time({year=inYear, month=inMonth, day=inDay, hour=inHour, min=inMinute, sec=inSecond, isdst=false})
+	
+	if zHours then
+		returnTime = returnTime - ((tonumber(zHours)*3600) + (tonumber(zMinutes)*60))
+	end
+	
+	return returnTime
+	
+end
 
 
 function MySQLAsyncExecute(query)
