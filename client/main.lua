@@ -85,23 +85,6 @@ RegisterCommand("race",function(source,args)
 	TriggerServerEvent('racing:start',raceId)
 end)
 
-RegisterCommand("raceQuit",function(source)
-	TriggerServerEvent('racing:quit')
-end)
-
--- RegisterCommand("joinRace",function(source,args)
--- 	TriggerServerEvent('racing:join',raceId)
--- end)
-
--- RegisterCommand("setrace",function(source,args)
---     local player = GetPlayerPed(-1)
--- 	activeRace = Races[raceId]
--- 	startPoint = AddBlipForCoord(activeRace.Markers[1].x, activeRace.Markers[1].y, activeRace.Markers[1].z)
--- 	SetBlipRoute(startPoint, true)
--- 	SetBlipRouteColour(startPoint,2)
--- end)
-
-
 RegisterCommand("raceApp",function(source,args)
     local playerPed = PlayerPedId()
 	SetNuiFocus(true,true)
@@ -239,11 +222,9 @@ RegisterNUICallback('closeApp', function()
 		closeApp = true
 	})
 end)
-
-
--- RegisterNUICallback('createRace', function()
--- 	TriggerServerEvent('racing:quit')
--- end)
+RegisterNUICallback('quitRace', function()
+	TriggerServerEvent('racing:quit')
+end)
 
 -- Track Screen
 RegisterNUICallback('getTracks', function()
@@ -287,7 +268,6 @@ end)
 RegisterNUICallback('raceStats', function(params,cb)
 	print(dump(params))
 	TriggerServerEvent('racing:finishedStats',params)
-	TriggerServerEvent('racing:finish', params.raceId)
 	cb('ok');
 
 end)

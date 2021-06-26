@@ -2,17 +2,18 @@
   <div>
     <h2>Recent Race Stats</h2>
     <div v-if="archiveObject" class="raceStats">
-      <div v-for="(track,index) in archiveObject" :key="index" class="togglable">
+      <!-- <div v-for="(track,index) in archiveObject" :key="track.id" class="togglable"> -->
+      <div v-for="index in archiveObject.length" :key="index" class="togglable">
         <div class="row" @click="toggleView(index)">
-          <h4 v-html="track.name" class="col-md-6" />
-          <h4 v-html="track.laps" class="col-md-6" />
+          <h4 v-html="archiveObject[archiveObject.length - index].name" class="col-md-6" />
+          <h4 v-html="archiveObject[archiveObject.length - index].laps" class="col-md-6" />
         </div>
         <div class="expand-height" :class="{active:viewingRace == index}">
           <div class="row">
             <h5 class="col-md" >Racer:</h5>
             <h5 class="col-md" >Total Time:</h5>
           </div>
-          <div v-for="(racer,rindex) in archivedRacers[index]" :key="rindex" class="row">
+          <div v-for="(racer,rindex) in archivedRacers[archiveObject.length - index]" :key="rindex" class="row">
             <h5 v-html="racer.player_name" class="col-md" />
             <h5 v-html="timeConvert(racer.total_time)" class="col-md" />
           </div>

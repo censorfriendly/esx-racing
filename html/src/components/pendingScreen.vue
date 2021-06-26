@@ -22,10 +22,10 @@
             <button @click="mapRace(raceId)" class="">Map To Race</button>
           </div>
           <div v-if="isOwner">
-            <button @click="mapRace(raceId)" class="">Cancel Race</button>
+            <button @click="quitRace()" class="">Cancel Race</button>
           </div>
           <div v-else>
-            <button @click="mapRace(raceId)" class="">quit Race</button>
+            <button @click="quitRace()" class="">Quit Race</button>
           </div>
         </div>
       </div>
@@ -56,6 +56,13 @@ export default {
         Nui.send('joinRace',{raceId})
         this.$store.state.raceApp.joinedRace = true;
         this.$store.state.raceApp.race_id = raceId;
+    },
+    quitRace: function() {
+        Nui.send('quitRace',{})
+        this.$store.state.raceApp.joinedRace = false;
+        this.$store.state.raceApp.race_id = 0;
+        this.$store.state.raceApp.isOwner = false;
+        Nui.send('getPendingRaces',{})
     },
     getPlayersInRace: function() {
         // Nui.send('raceDetails',{raceId})

@@ -3,12 +3,12 @@ ESX = nil
 activeRaces = {}
 pendingRaces = {}
 archiveRaces = {}
--- raceConfigs = {}
+raceConfigs = {}
 
-pendingRaces[1] = {}
-raceConfigs = { [1] = { ["laps"] = 1,["started"] = false,["id"] = 1,["name"] = 'Test Track',["type"] = 'Circuit',["owner"] = 'license:fb4534551c7d686f36d903c66de8531e8d1db82c',} ,}
+-- pendingRaces[1] = {}
+-- raceConfigs = { [1] = { ["laps"] = 1,["started"] = false,["id"] = 1,["name"] = 'Test Track',["type"] = 'Circuit',["owner"] = 'license:fb4534551c7d686f36d903c66de8531e8d1db82c',} ,}
 archiveRaces = { [1] = { [1] = { ["best_lap"] = '1970-01-01T00:00:33.423Z',["position"] = 1,["checkpoint"] = 1,["identifier"] = 'license:fbe32bb51c7d686f36d903c66de8531e8d1db82c',["race_key"] = '',["lap"] = 2,["finished"] = true,["total_time"] = '1970-01-01T00:01:14.459Z',["player_name"] = 'Test Racer',} , [2] = { ["best_lap"] = '1970-01-01T00:00:33.423Z',["position"] = 1,["checkpoint"] = 1,["identifier"] = 'license:fbe32bb51c7d686f36d903c66de8531e8d1db82c',["race_key"] = '',["lap"] = 2,["finished"] = true,["total_time"] = '1970-01-01T00:01:18.459Z',["player_name"] = 'Test Racer',} ,} ,[2] = { [1] = { ["best_lap"] = '1970-01-01T00:00:25.270Z',["position"] = 1,["checkpoint"] = 1,["identifier"] = 'license:fbe32bb51c7d686f36d903c66de8531e8d1db82c',["race_key"] = '',["lap"] = 3,["finished"] = true,["total_time"] = '1970-01-01T00:01:28.072Z',["player_name"] = 'Test Racer',} ,} ,}
-archiveConfigs = { [1] = { ["laps"] = 1,["name"] = 'Test Track',["type"] = 'Circuit',["started"] = true,["racerCount"] = 1,["id"] = 1,["owner"] = 'license:fbe32bb51c7d686f36d903c66de8531e8d1db82c',} ,}
+archiveConfigs = { [1] = { ["laps"] = 1,["name"] = 'Test Track',["type"] = 'Circuit',["started"] = true,["racerCount"] = 1,["id"] = 1,["owner"] = 'license:fbe32bb51c7d686f36d903c66de8531e8d1db82c',} ,[2] = { ["laps"] = 1,["name"] = 'Test Track2',["type"] = 'Circuit',["started"] = true,["racerCount"] = 1,["id"] = 1,["owner"] = 'license:fbe32bb51c7d686f36d903c66de8531e8d1db82c',}}
 -- table.insert(raceConfigs, { 
 --     id = 1,
 --     name = 'Test Track',
@@ -25,24 +25,24 @@ archiveConfigs = { [1] = { ["laps"] = 1,["name"] = 'Test Track',["type"] = 'Circ
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 
 
-RegisterServerEvent('racing:finish')
-AddEventHandler('racing:finish', function(raceId)
-    -- identifier = ESX.GetPlayerFromId(source).getIdentifier()
-    -- -- MySQL.Async.execute('UPDATE racing_active SET `finished` = 1, `total_time` = @total_time WHERE identifier Like @identifier ',
-    -- -- {
-    -- --     ['@total_time'] = finishTime,
-    -- --     ['@identifier'] = "%" .. GetIdentifierWithoutLicense(identifier) .. "%"
-    -- -- })
-    -- for y = 1, #activeRaces[raceId] do
-    --     if activeRaces[raceId][y].identifier == identifier then 
-    --         activeRaces[raceId][y].finished = true
-    --         break
-    --     end
-    -- end
-    -- TriggerClientEvent('chatMessage', source, "", {0,0,0}, 'Finished Race ')
-    -- checkFinished()
-    -- createLastRaceData(raceId)
-end)
+-- RegisterServerEvent('racing:finish')
+-- AddEventHandler('racing:finish', function(raceId)
+--     -- identifier = ESX.GetPlayerFromId(source).getIdentifier()
+--     -- -- MySQL.Async.execute('UPDATE racing_active SET `finished` = 1, `total_time` = @total_time WHERE identifier Like @identifier ',
+--     -- -- {
+--     -- --     ['@total_time'] = finishTime,
+--     -- --     ['@identifier'] = "%" .. GetIdentifierWithoutLicense(identifier) .. "%"
+--     -- -- })
+--     -- for y = 1, #activeRaces[raceId] do
+--     --     if activeRaces[raceId][y].identifier == identifier then 
+--     --         activeRaces[raceId][y].finished = true
+--     --         break
+--     --     end
+--     -- end
+--     -- TriggerClientEvent('chatMessage', source, "", {0,0,0}, 'Finished Race ')
+--     -- checkFinished()
+--     -- createLastRaceData(raceId)
+-- end)
 
 
 RegisterServerEvent('racing:finishedStats')
@@ -83,9 +83,15 @@ AddEventHandler('racing:quit', function()
         end
         if raceConfigs[x] ~= nil then
             if raceConfigs[x].owner == ident then 
-                table.remove(raceConfigs, x)
+                raceConfigs[x] = nil
+                -- need to notify all players
+                for y = 1, #pendingRaces[x] do
+                    local xPlayer = ESX.GetPlayerFromIdentifier(pendingRaces[x][y].identifier)
+                    xPlayer.triggerEvent('racing:quitRace')
+                    xPlayer.triggerEvent('chatMessage', "", {0,0,0}, 'Race Cancelled')
+                end
+                pendingRaces[x] = nil
                 quitRace = true
-                print('quit setup of Race')
             end
         end
         if quitRace then 
@@ -99,7 +105,9 @@ AddEventHandler('racing:quit', function()
             if activeRaces[x] ~= nil then
                 for y = 1, #activeRaces[x] do
                     if activeRaces[x][y].identifier == ident then 
-                        table.remove(activeRaces[x],y)
+                        activeRaces[x][y].finished = true
+                        activeRaces[x][y].total_time = "DNF"
+                        activeRaces[x][y].best_lap = "DNF"
                         quitRace = true
                         print('quit Active Race')
                         break
@@ -159,7 +167,6 @@ end)
 
 RegisterServerEvent('racing:start')
 AddEventHandler('racing:start', function(raceId)
-    print('we are hitting the start race server')
     local raceCopy = pendingRaces[raceId]
     activeRaces[raceId] = {}
     for i = 1, #raceCopy do 
