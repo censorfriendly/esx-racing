@@ -22,6 +22,7 @@ CreateThread(function()
 		end
 	end
 end)
+
 CreateThread(function()
 	while true do
 		Wait(100)
@@ -117,6 +118,7 @@ function startRace(race_Id)
 	if(startPoint) then 
 		RemoveBlip(startPoint)
 	end
+	checkpoint[1] = AddBlipForCoord(activeRace.Markers[1].x, activeRace.Markers[1].y, activeRace.Markers[1].z)
 	checkPos = 1
 	raceLap = 1
 	finishLine = false
@@ -127,7 +129,8 @@ function startRace(race_Id)
 		setRaceConfig = true,
 		raceConfig = {
 			laps = raceConfig.laps,
-			totalChecks = #activeRace.Markers
+			totalChecks = #activeRace.Markers,
+			racerCount = raceConfig.racerCount
 		}
 	})
 	ESX.ShowNotification("Race Countdown in 10 Seconds", true, false, '120')
@@ -140,6 +143,7 @@ function startRace(race_Id)
 	Wait(3000)
 	raceStarted = true
 	
+	RemoveBlip(checkpoint[1])
 	for i=checkPos, checkPos + 2 do 
 		checkpoint[i] = AddBlipForCoord(activeRace.Markers[i].x, activeRace.Markers[i].y, activeRace.Markers[i].z)
 	end
@@ -155,7 +159,6 @@ function finishRace()
 		endRace = true
 	})
 	-- Need to get a callback from ui to tell us race details
-	-- TriggerServerEvent('racing:finish', total, raceId)
 	resetFlags()
 end
 
@@ -280,6 +283,15 @@ RegisterNUICallback('createRace', function(params,cb)
 
 end)
 
+
+RegisterNUICallback('raceStats', function(params,cb)
+	print(dump(params))
+	TriggerServerEvent('racing:finishedStats',params)
+	TriggerServerEvent('racing:finish', params.raceId)
+	cb('ok');
+
+end)
+
 -- Pending Race Screen
 
 
@@ -316,6 +328,10 @@ RegisterNUICallback('startRace', function(params, cb)
 end)
 
 
+RegisterNUICallback('getArchivedList', function(params, cb)
+	TriggerServerEvent('racing:finishedRacesList')
+	cb('ok');
+end)
 
 -- Error handling function
 
@@ -335,19 +351,18 @@ end)
 
 -- Home Screen Post Race
 
-RegisterNetEvent("racing:raceData")
-AddEventHandler("racing:raceData", function(raceData)
-	print('sending race data');
+RegisterNetEvent("racing:archivedList")
+AddEventHandler("racing:archivedList", function(raceInfo, racerInfo)
 	SendNUIMessage({
 		raceData = true,
-		message = raceData
+		raceInfo = raceInfo,
+		racers = racerInfo
 	})
 end)
 
 -- Racing Screen
 
-RegisterNUICallback('setBestLap', function(params, cb)
-	print(dump(params));
-	TriggerServerEvent('racing:setBestLap',params.raceId, params.bestLap)
-	cb('ok');
-end)
+-- RegisterNUICallback('setBestLap', function(params, cb)
+-- 	TriggerServerEvent('racing:setBestLap',params.raceId, params.bestLap)
+-- 	cb('ok');
+-- end)

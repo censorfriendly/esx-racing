@@ -4,7 +4,7 @@
     <div v-if="!joinedRace && !isOwner">
       <div v-for="(track,index) in pendingObject" :key="index">
           <div class="grid third center">
-            <div><h4 v-html="track.name"/></div>
+            <div><h4 v-html="track.name + ' Laps:'+ track.laps"/></div>
             <div><button @click="joinRace(track.id)" class="">Join Race</button></div>
             <div><button @click="mapRace(track.id)" class="">Map To Race</button></div>
           </div>
@@ -14,15 +14,18 @@
       <div>
         <button @click="getPlayersInRace">Refresh Racers List</button>
         <h3>Active Race: <span v-html="trackObject[raceId - 1].Config.Name"/> </h3>
-        <div v-if="isOwner">
-          <div>
+        <div>
+          <div v-if="isOwner">
             <button @click="startRace(raceId)" class="">Start Race</button>
           </div>
           <div>
             <button @click="mapRace(raceId)" class="">Map To Race</button>
           </div>
-          <div>
+          <div v-if="isOwner">
             <button @click="mapRace(raceId)" class="">Cancel Race</button>
+          </div>
+          <div v-else>
+            <button @click="mapRace(raceId)" class="">quit Race</button>
           </div>
         </div>
       </div>
@@ -55,6 +58,7 @@ export default {
         this.$store.state.raceApp.race_id = raceId;
     },
     getPlayersInRace: function() {
+        // Nui.send('raceDetails',{raceId})
       return "null";
     },
     getParticipatingRace: function() {
@@ -89,7 +93,7 @@ export default {
           this.race_id = 0
         }
         if (item.racingListEvent) {
-            this.checkIfOwner();
+            // this.checkIfOwner();
         }
       },
       false,

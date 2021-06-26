@@ -76,7 +76,6 @@ export default {
             totalCheckpoint: 0,
             lap: 1,
             totalLaps: 0,
-            setLap: 0,
             lastLapTime: 0,
             bestLapTime: 0,
         }
@@ -106,6 +105,10 @@ export default {
             this.timeBegan = null;
             this.timeStopped = null;
             this.time = "00:00:00.000";
+            this.lapTime = "00:00:00.000";
+            this.bestLap = "00:00:00.000";
+            this.started = null;
+
         },
         clockRunning: function() {
             var currentTime = new Date()
@@ -146,6 +149,10 @@ export default {
             if (this.lap < this.totalLaps) {
                 this.lap++;
             }
+            this.bestTime();
+            
+        },
+        bestTime: function() {
             var currentTime = new Date()
             , timeElapsed = new Date(currentTime -  this.lastLapTime)
             , hour = timeElapsed.getUTCHours()
@@ -158,17 +165,19 @@ export default {
                 this.zeroPrefix(sec, 2) + "." + 
                 this.zeroPrefix(ms, 3);
             this.lastLapTime = currentTime;
+            console.log("looking at best lap time");
+            console.log(this.bestLapTime);
+            console.log(timeElapsed);
             if(!this.bestLapTime || timeElapsed < this.bestLapTime) {
                 this.bestLap = time;
                 this.bestLapTime = timeElapsed;
-                var raceId = this.$store.state.raceApp.race_id;
-                Nui.send('setBestLap',
-                {
-                    bestLap:timeElapsed,
-                    raceId:raceId
-                });
+                // var raceId = this.$store.state.raceApp.race_id;
+                // Nui.send('setBestLap',
+                // {
+                //     bestLap:timeElapsed,
+                //     raceId:raceId
+                // });
             }
-            
         }
     },
     mounted() {
@@ -177,6 +186,7 @@ export default {
         event => {
             const item = event.data || event.detail;
             if (item.startrace) {  
+                this.reset()
                 this.start()
             }
             if (item.checkPoint) {
@@ -186,7 +196,17 @@ export default {
                 this.lapEvent()
             }
             if(item.endRace) {
-                this.stop()
+                // this.bestTime();
+                var currentTime = new Date();
+                var timeElapsed = new Date(currentTime - this.timeBegan)
+                console.log(this.bestLapTime);
+                Nui.send('raceStats',
+                {
+                    raceId: this.$store.state.raceApp.race_id,
+                    bestLap: this.bestLapTime,
+                    trackTime: timeElapsed
+                });
+                this.stop();
             }
             if(item.positionUpdate) {
                 this.pos = item.position;
@@ -197,6 +217,7 @@ export default {
                 this.lap = 1;
                 this.totalLaps = item.raceConfig.laps;
                 this.totalCheckpoint = item.raceConfig.totalChecks;
+                this.totalPos = item.raceConfig.racerCount;
             }
         },
         false,

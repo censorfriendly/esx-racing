@@ -43,14 +43,21 @@ export default {
         this.formActive = 1;
       },
       createRace: function() {
-        Nui.send('createRace',{
-          raceId: this.selectedRace + 1,
-          laps: this.config.laps
-        })
-        this.formActive = 0;
-        this.$store.state.raceApp.joinedRace = true;
-        this.$store.state.raceApp.isOwner = true;
-        this.$store.state.raceApp.race_id = this.selectedRace + 1;
+        if(!this.$store.state.raceApp.joinedRace) {
+          Nui.send('createRace',{
+            raceId: this.selectedRace + 1,
+            laps: this.config.laps
+          })
+          this.formActive = 0;
+          this.$store.state.raceApp.joinedRace = true;
+          this.$store.state.raceApp.isOwner = true;
+          this.$store.state.raceApp.race_id = this.selectedRace + 1;
+        }
+        else {
+          this.formActive = 0;
+          this.$store.state.raceApp.error = "You already are in a race, leave that race first to create a new one";
+        }
+       
       },
       clearRace: function() {
         this.formActive = 0;
