@@ -1,13 +1,14 @@
 <template>
   <div class="rapp">
-        <h1 @click="triggerTab(0)">Home Screen</h1>
+        <!-- <h3 class="center-md" @click="triggerTab(0)">Underground Scene</h3> -->
         <p class="error" v-html="errmessage">
-        <hr/>
-        <div class="grid third center">
-            <div class="tab" :class="{active:index==1}" @click="triggerTab(1)">Pending Races</div>
-            <div class="tab" :class="{active:index==2}" @click="triggerTab(2)">Tracks</div>
-            <div class="tab" :class="{active:index==3}" @click="triggerTab(3)">Leaderboards</div>
+        <div class="row center-md">
+            <div class="tab col-md-2 col-md-offset" :class="{active:index==0}" @click="triggerTab(0)">Home</div>
+            <div class="tab col-md-3" :class="{active:index==1}" @click="triggerTab(1)">Pending Races</div>
+            <div class="tab col-md-3" :class="{active:index==2}" @click="triggerTab(2)">Tracks</div>
+            <div class="tab col-md-2" :class="{active:index==3}" @click="triggerTab(3)">Leaderboards</div>
         </div>
+        <hr/>
         <div class="interior-page">
             <div class="loading-screen" :class="{active:loadScreen}">
                 <div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
@@ -24,6 +25,9 @@
             <div :class="{active:index==3}" class="screen-container">
                 <leaderboardScreen />
             </div>
+        </div>
+        <div class="rapp_currency">
+          MRC: 0
         </div>
   </div>
 </template>
@@ -56,13 +60,15 @@ export default {
         Nui.send('closeApp',{})
       },
       triggerTab: function(i) {
-          if(i == 1){
+          if(i == 0) {
+            Nui.send('getArchivedList',{})
+          }
+          else if(i == 1){
             Nui.send('getPendingRaces',{})
             this.$store.state.raceApp.loading = true;
           }
-          else if(i == 0) {
-            console.log("sending archived list request");
-            Nui.send('getArchivedList',{})
+          else if(i == 3) {
+            Nui.send('getLeaderboards',{})
           }
           this.$store.state.raceApp.error = '';
           this.index = i;
@@ -112,19 +118,29 @@ export default {
 <style lang="scss">
 .rapp {
     display: none;
-    background-color: green;
+    background-color:#D3D3D3;
     position: absolute;
-    bottom:0px;
-    right:0px;
+    // border-top-left-radius: 15%;
+    // border-top-right-radius: 15%;
+    border-radius: 7%;
+    bottom:5%;
+    right:5%;
     padding:15px;
-    min-height: 25%;
-    max-width: 400px;
-    width: 400px;
+    min-width: 35%;
+    max-height: 400px;
+    height: 400px;
+    overflow: hidden;
+    .rapp_currency {
+      position: absolute;
+      bottom:0px;
+      right:10%;
+      font-weight: bold;
+    }
     h1 {
       text-align: center;
     }
     .interior-page {
-        height: 500px;
+        height: 290px;
         overflow-y:auto;
         position: relative;
     }
@@ -147,7 +163,10 @@ export default {
       visibility: hidden;
       opacity: 0;
       transition: all .5s;
-      width:100%;
+      width: 90%;
+      margin: 5%;
+      margin-top: 2%;
+      box-sizing: border-box;
       &.active {
         visibility: visible;
         opacity: 1;
@@ -156,16 +175,40 @@ export default {
 }
 .tab {
     cursor: pointer;
+    font-weight: bold;
+    padding:6px 9px;
+    border-radius: 7px;
     &.active {
-        background-color: black;
-        color: white;
+        background-color: orange;
+        color: black;
     }
 }
 .error {
     color:red;
 }
+.evenRow {
+  background-color: #FFFFFF;
+}
 
 
+// globals
+button {
+  border-radius: 15px;
+  background-color: orange;
+  font-size: .8em;
+  font-weight: bold;
+  -webkit-box-shadow: 0px 2px 14px 5px rgba(0,0,0,0.25); 
+  box-shadow: 0px 2px 14px 5px rgba(0,0,0,0.25);
+  padding:6px 8px;
+  box-sizing: border-box;
+}
+.numberInput {
+  max-width: 55px;
+  border-radius: 15px;
+  font-size: .8em;
+  font-weight: bold;
+  text-align: center;
+}
 // Custom animations
 .expand-height {
   max-height: 0px;
@@ -178,8 +221,51 @@ export default {
 .togglable {
   cursor: pointer;
 }
+// utilities
 
+.ut-vertAlignCenter {
+  align-self: center;
+}
 
+$spacing: 10px;
+
+.mt {
+  margin-top: $spacing;
+}
+.mt-2 {
+  margin-top: $spacing * 2;
+}
+.mt-3 {
+  margin-top: $spacing * 3;
+}
+.mt-4 {
+  margin-top: $spacing * 4;
+}
+.mb {
+  margin-bottom: $spacing;
+}
+.mb-2 {
+  margin-bottom: $spacing * 2;
+}
+.mb-3 {
+  margin-bottom: $spacing * 3;
+}
+.mb-4 {
+  margin-bottom: $spacing * 4;
+}
+
+.p {
+  padding: $spacing;
+}
+.p-2 {
+  padding: $spacing * 2;
+}
+.p-3 {
+  padding: $spacing * 3;
+}
+.p-4 {
+  padding: $spacing * 4;
+}
 // Loader css
 .lds-spinner {
     color: official;

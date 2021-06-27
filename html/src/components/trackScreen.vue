@@ -1,19 +1,27 @@
 <template>
   <div class="trackScreen">
-      <h3>Build track screen template</h3>
       <div v-for="(track,index) in trackObject" :key="index">
-          <div class="grid third center">
-            <div><h4 v-html="track.Config.Name"/></div>
-            <div><button @click="setRace(index)" class="">Create Race</button></div>
-            <div><button class="">View Race</button></div>
+          <div class="row" :class="{evenRow: index % 2 == 0}">
+            <div class="col-md-1 ut-vertAlignCenter center-md"><h4 v-html="index + 1"/></div>
+            <div class="col-md-5 ut-vertAlignCenter center-md"><h4 v-html="track.Config.Name"/></div>
+            <div class="col-md-3 ut-vertAlignCenter"><button class="btn" @click="setRace(index)">Create Race</button></div>
+            <div class="col-md-3 ut-vertAlignCenter"><button class="btn">View Race</button></div>
           </div>
       </div>
-      <div class="form" :class="{active:formActive}">
-          <label>No. of Laps</label>
-          <input v-model="config.laps">
-          <input type="hidden" v-model="config.race_id"/>
-          <button @click="createRace">Setup Race</button>
-          <button @click="clearRace">Cancel Setup</button>
+      <div class="form col-md-12" :class="{active:formActive}">
+        <div class="p-2">
+            <strong class="col-md-6">No. of Laps</strong>
+            <input class="col-md-offset-3 numberInput" v-model="config.laps">
+            <input type="hidden" v-model="config.race_id"/>
+            <div class="row ut-vertAlignCenter mt center">
+              <div class="col-md-6">
+                <button class="btn" @click="createRace">Setup Race</button>
+              </div>
+              <div class="col-md-6">
+                <button class="btn" @click="clearRace">Cancel Setup</button>
+              </div>
+            </div>
+        </div>
       </div>
   </div>
 </template>
@@ -72,20 +80,21 @@ export default {
 </script>
 
 <style lang="scss">
-.trackScreen {
-  position: relative;
-  overflow: hidden;
-}
 .form {
   position: absolute;
   width:80%;
   left:10%;
-  top:-100%;
+  top:0px;
+  overflow: hidden;
+  max-height: 0px;
   transition: .25s ease-in;
   background-color: white;
-  padding:25px;
+  border-bottom-left-radius: 15px;
+  border-bottom-right-radius: 15px;
+  -webkit-box-shadow: 4px 6px 17px 1px rgba(0,0,0,0.44); 
+  box-shadow: 4px 6px 17px 1px rgba(0,0,0,0.44);
   &.active {
-    top:0px;
+    max-height: 100%;
   }
 }
 

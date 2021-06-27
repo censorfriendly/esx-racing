@@ -9,6 +9,7 @@ export default new Vuex.Store({
  state: {
     trackList: {},
     pendingList: {},
+    leaderboard: {},
     raceApp: {
         joinedRace: false,
         race_id: 0,

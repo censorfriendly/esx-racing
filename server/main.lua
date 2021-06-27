@@ -218,7 +218,15 @@ AddEventHandler('racing:finishedRacesList', function()
     TriggerClientEvent('racing:archivedList', usource, archiveConfigs, archiveRaces)
 end)
 
-
+RegisterServerEvent('racing:getLeaderboards')
+AddEventHandler('racing:getLeaderboards', function(race_id)
+    local usource = source
+    MySQL.Async.fetchAll('SELECT * FROM racing_tracktimes WHERE track_id = @trackId Order By track_id Desc, best_lap Desc Limit 10', {['@trackId'] = race_id}, function(results)
+        if #results > 0 then 
+            TriggerClientEvent('racing:sendLeaderboards', usource, results)
+        end
+    end)
+end)
 
 -- Thread to manage as races finish to translate into Archived format, and to auto DNF after designated time frame
 CreateThread(function()

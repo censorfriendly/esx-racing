@@ -1,12 +1,11 @@
 <template>
   <div>
-    <h3>Build pending template</h3>
     <div v-if="!joinedRace && !isOwner">
       <div v-for="(track,index) in pendingObject" :key="index">
-          <div class="grid third center">
-            <div><h4 v-html="track.name + ' Laps:'+ track.laps"/></div>
-            <div><button @click="joinRace(track.id)" class="">Join Race</button></div>
-            <div><button @click="mapRace(track.id)" class="">Map To Race</button></div>
+          <div class="center row" :class="{evenRow: index % 2 == 0}">
+            <div class="col-md-6 ut-vertAlignCenter"><h4 v-html="track.name + ' Laps:'+ track.laps"/></div>
+            <div class="col-md-3 ut-vertAlignCenter"><button @click="joinRace(track.id)" class="">Join Race</button></div>
+            <div class="col-md-3 ut-vertAlignCenter"><button @click="mapRace(track.id)" class="">Map To Race</button></div>
           </div>
       </div>
     </div>
@@ -14,17 +13,17 @@
       <div>
         <button @click="getPlayersInRace">Refresh Racers List</button>
         <h3>Active Race: <span v-html="trackObject[raceId - 1].Config.Name"/> </h3>
-        <div>
-          <div v-if="isOwner">
+        <div class="row">
+          <div class="col-md-4 ut-vertAlignCenter" v-if="isOwner">
             <button @click="startRace(raceId)" class="">Start Race</button>
           </div>
-          <div>
+          <div class="col-md-4 ut-vertAlignCenter">
             <button @click="mapRace(raceId)" class="">Map To Race</button>
           </div>
-          <div v-if="isOwner">
+          <div class="col-md-4 ut-vertAlignCenter" v-if="isOwner">
             <button @click="quitRace()" class="">Cancel Race</button>
           </div>
-          <div v-else>
+          <div class="col-md-4 ut-vertAlignCenter" v-else>
             <button @click="quitRace()" class="">Quit Race</button>
           </div>
         </div>

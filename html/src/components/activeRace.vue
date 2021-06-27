@@ -167,18 +167,9 @@ export default {
                 this.zeroPrefix(sec, 2) + "." + 
                 this.zeroPrefix(ms, 3);
             this.lastLapTime = currentTime;
-            console.log("looking at best lap time");
-            console.log(this.bestLapTime);
-            console.log(timeElapsed);
             if(!this.bestLapTime || timeElapsed < this.bestLapTime) {
                 this.bestLap = time;
                 this.bestLapTime = timeElapsed;
-                // var raceId = this.$store.state.raceApp.race_id;
-                // Nui.send('setBestLap',
-                // {
-                //     bestLap:timeElapsed,
-                //     raceId:raceId
-                // });
             }
         }
     },
@@ -200,7 +191,6 @@ export default {
             if(item.endRace) {
                 if(this.bestLapTime == 0)
                     this.bestTime()
-                // this.bestTime();
                 var currentTime = new Date();
                 var timeElapsed = new Date(currentTime - this.timeBegan)
                 Nui.send('raceStats',
@@ -239,7 +229,6 @@ export default {
     position: absolute;
     bottom:15%;
     right:5%;
-    // width: 15%;
     height: auto;
     background: rgba(#000000, 0.2);
     color:#FFFFFF;

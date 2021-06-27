@@ -216,22 +216,25 @@ end
 -- Race App Code beneath
 -- Globals
 
-RegisterNUICallback('closeApp', function()
+RegisterNUICallback('closeApp', function(params,cb)
 	SetNuiFocus(false,false)
 	SendNUIMessage({
 		closeApp = true
 	})
+	cb('ok');
 end)
-RegisterNUICallback('quitRace', function()
+RegisterNUICallback('quitRace', function(params,cb)
 	TriggerServerEvent('racing:quit')
+	cb('ok');
 end)
 
 -- Track Screen
-RegisterNUICallback('getTracks', function()
+RegisterNUICallback('getTracks', function(params,cb)
 	SendNUIMessage({
 		trackListEvent = true,
 		tracks = Races
 	})
+	cb('ok');
 end)
 
 RegisterNUICallback('getPendingRaces', function(data,cb)
@@ -266,16 +269,29 @@ end)
 
 
 RegisterNUICallback('raceStats', function(params,cb)
-	print(dump(params))
 	TriggerServerEvent('racing:finishedStats',params)
 	cb('ok');
 
+end)
+
+RegisterNUICallback('getLeaderboards', function(params,cb)
+	print(dump(params))
+	TriggerServerEvent('racing:getLeaderboards',params.race_id)
+	cb('ok');
 end)
 
 -- Pending Race Screen
 
 
 
+RegisterNetEvent('racing:sendLeaderboards')
+AddEventHandler('racing:sendLeaderboards', function(leaderboard)
+	print(dump(leaderboard))
+	SendNUIMessage({
+		leaderboardEvent = true,
+		list = leaderboard
+	})
+end)
 RegisterNetEvent("racing:racingList")
 AddEventHandler("racing:racingList", function(raceList)
 	SendNUIMessage({
