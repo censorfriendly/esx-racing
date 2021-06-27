@@ -87,7 +87,7 @@ export default {
         if (item.initApp) {
             this.$store.state.global.identifier = item.identifier;
         }
-        if (item.endRace) {
+        if (item.endRace || item.dnf) {
             this.$store.state.raceApp.joinedRace = false;
             this.$store.state.raceApp.isOwner = false;
             this.index = 0;

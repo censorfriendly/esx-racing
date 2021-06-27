@@ -45,6 +45,9 @@ export default {
       this.viewingRace = i;
     },
     timeConvert: function(timestamp) {
+      if(timestamp == 'DNF') {
+        return timestamp;
+      }
       var finishedTime = new Date(timestamp)
       , hour = finishedTime.getUTCHours()
       , min = finishedTime.getUTCMinutes()

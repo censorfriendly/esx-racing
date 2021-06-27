@@ -107,6 +107,8 @@ export default {
             this.time = "00:00:00.000";
             this.lapTime = "00:00:00.000";
             this.bestLap = "00:00:00.000";
+            this.bestLapTime = 0;
+            this.lastLapTime = 0;
             this.started = null;
 
         },
@@ -196,10 +198,11 @@ export default {
                 this.lapEvent()
             }
             if(item.endRace) {
+                if(this.bestLapTime == 0)
+                    this.bestTime()
                 // this.bestTime();
                 var currentTime = new Date();
                 var timeElapsed = new Date(currentTime - this.timeBegan)
-                console.log(this.bestLapTime);
                 Nui.send('raceStats',
                 {
                     raceId: this.$store.state.raceApp.race_id,
@@ -218,6 +221,10 @@ export default {
                 this.totalLaps = item.raceConfig.laps;
                 this.totalCheckpoint = item.raceConfig.totalChecks;
                 this.totalPos = item.raceConfig.racerCount;
+            }
+            if(item.dnf) {
+                this.stop();
+                this.reset()
             }
         },
         false,

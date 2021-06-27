@@ -284,6 +284,19 @@ AddEventHandler("racing:racingList", function(raceList)
 	})
 end)
 
+RegisterNetEvent('racing:dnfIssued')
+AddEventHandler('racing:dnfIssued', function()
+	ESX.ShowNotification("You have been disqualified from the race", true, false, '120')
+	RemoveBlip(checkpoint[checkPos])
+	checkPos = checkPos + 1
+	RemoveBlip(checkpoint[checkPos])
+	checkPos = checkPos + 1
+	RemoveBlip(checkpoint[checkPos])
+	resetFlags()
+	SendNUIMessage({
+		dnf = true
+	})
+end)
 
 RegisterNUICallback('mapToRace', function(params, cb)
     local player = GetPlayerPed(-1)

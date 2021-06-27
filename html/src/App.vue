@@ -36,7 +36,7 @@ export default {
         if (item.openRacing) {  
           this.activeRacingClass = 'racing-active ';
         }
-        if(item.endRace) {
+        if(item.endRace || item.dnf) {
           setTimeout(this.closeAfterDelay, 5000)
         }
         if(item.raceApp) {
