@@ -249,7 +249,6 @@ AddEventHandler('racing:getCrypto', function(signUpFlag)
     identifier = ESX.GetPlayerFromId(source).getIdentifier()
     local usource = source
     MySQL.Async.fetchAll('Select * from users WHERE identifier = @identifier', {['@identifier'] = identifier}, function(result)
-        print(dump(result))
         TriggerClientEvent('racing:setCrypto', usource, result[1].racecrypto)
     end)
 end)
