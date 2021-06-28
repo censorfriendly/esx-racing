@@ -41,6 +41,7 @@ export default {
         }
         if(item.raceApp) {
           this.raceAppClass ='racing-app'
+          Nui.send('getCrypto',{})
         }
         if(item.closeApp) {
           this.raceAppClass = ''
@@ -51,7 +52,7 @@ export default {
     this.keyListener = window.addEventListener(
       'keydown',
       e => {
-        if (e.key == "Escape" || e.key == 'Backspace' || e.key == 'Delete' ) {
+        if (e.key == "Escape" || e.key == 'Delete' ) {
           Nui.send('closeApp',{})
         }
     });

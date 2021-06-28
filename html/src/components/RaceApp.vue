@@ -27,7 +27,7 @@
             </div>
         </div>
         <div class="rapp_currency">
-          MRC: 0
+          MRC: <span v-html="crypto" />
         </div>
   </div>
 </template>
@@ -102,6 +102,10 @@ export default {
         if (item.startrace) {  
             this.index = 0;
         }
+        if (item.cryptoEvent) {
+          console.log(item);
+          this.$store.state.crypto = item.crypto;
+        }
       },
       false,
     );
@@ -109,6 +113,9 @@ export default {
   computed: {
     errmessage: function() {
       return this.$store.state.raceApp.error;
+    },
+    crypto: function() {
+      return this.$store.state.crypto;
     }
   }
 
@@ -130,6 +137,9 @@ export default {
     max-height: 400px;
     height: 400px;
     overflow: hidden;
+    border: 4px solid black;
+    -webkit-box-shadow: 0px 5px 22px 5px rgb(0 0 0 / 63%);
+    box-shadow: 0px 5px 22px 5px rgb(0 0 0 / 63%);
     .rapp_currency {
       position: absolute;
       bottom:0px;
@@ -172,6 +182,9 @@ export default {
         opacity: 1;
       }
     }
+    ::-webkit-scrollbar {
+    display: none;
+}
 }
 .tab {
     cursor: pointer;

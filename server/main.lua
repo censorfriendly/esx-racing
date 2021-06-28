@@ -5,6 +5,7 @@ pendingRaces = {}
 archiveRaces = {}
 raceConfigs = {}
 archiveConfigs = {}
+alertSignups = {}
 
 -- pendingRaces[1] = {}
 -- raceConfigs = { [1] = { ["laps"] = 1,["started"] = false,["id"] = 1,["name"] = 'Test Track',["type"] = 'Circuit',["owner"] = 'license:fb4534551c7d686f36d903c66de8531e8d1db82c',} ,}
@@ -48,15 +49,13 @@ AddEventHandler('racing:quit', function()
     local ident = identifier
     local quitRace = false
     -- Check pending race
-    print('looking at quitting race')
 
-    for x = 1, #pendingRaces do 
+    for x,v in pairs(pendingRaces) do 
         if pendingRaces[x] ~= nil then
             for y = 1, #pendingRaces[x] do
                 if pendingRaces[x][y].identifier == ident then 
                     table.remove(pendingRaces[x],y)
                     quitRace = true
-                    print('quit Pending Race')
                     break
                 end
             end
@@ -64,11 +63,10 @@ AddEventHandler('racing:quit', function()
         if raceConfigs[x] ~= nil then
             if raceConfigs[x].owner == ident then 
                 raceConfigs[x] = nil
-                -- need to notify all players
                 for y = 1, #pendingRaces[x] do
                     local xPlayer = ESX.GetPlayerFromIdentifier(pendingRaces[x][y].identifier)
                     xPlayer.triggerEvent('racing:quitRace')
-                    xPlayer.triggerEvent('chatMessage', "", {0,0,0}, 'Race Cancelled')
+                    xPlayer.triggerEvent('esx:showNotification', 'Race Cancelled')
                 end
                 pendingRaces[x] = nil
                 quitRace = true
@@ -81,7 +79,7 @@ AddEventHandler('racing:quit', function()
 
     -- Check active race
     if quitRace == false then 
-        for x = 1, #activeRaces do 
+        for x,v in pairs(activeRaces) do 
             if activeRaces[x] ~= nil then
                 for y = 1, #activeRaces[x] do
                     if activeRaces[x][y].identifier == ident then 
@@ -89,7 +87,6 @@ AddEventHandler('racing:quit', function()
                         activeRaces[x][y].total_time = "DNF"
                         activeRaces[x][y].best_lap = "DNF"
                         quitRace = true
-                        print('quit Active Race')
                         break
                     end
                 end
@@ -100,8 +97,7 @@ AddEventHandler('racing:quit', function()
         end
     end
     if quitRace then 
-        print('send quit message')
-        TriggerClientEvent('chatMessage', source, "", {0,0,0}, 'left race')
+        TriggerClientEvent('esx:showNotification', source, "", {0,0,0}, 'Quit Race')
         TriggerClientEvent('racing:quitRace',source)
     end
 end)
@@ -111,12 +107,9 @@ AddEventHandler('racing:join', function(raceId,setOwner,laps)
     local xPlayer = ESX.GetPlayerFromId(source)
     local usource = source
     identifier = xPlayer.getIdentifier()
-    print(identifier)
-    print("above is the correct identifier")
     -- local raceAlreadySet = checkIfInTable(pendingRaces,'race', raceId)
     if setOwner and pendingRaces[raceId] == nil then
         -- Create a new entry for the race (only 1 of each race can be created)
-        print("we are creating a new race")
         rconf = {
             id = raceId,
             name = Races[raceId].Config.Name,
@@ -133,16 +126,14 @@ AddEventHandler('racing:join', function(raceId,setOwner,laps)
             player_name = xPlayer.getName(),
         }
         table.insert(pendingRaces[raceId], inObj)
-
+        alertPlayers(rconf)
     else
-        print("race already exists add us to it")
         local inObj = {
             identifier = identifier,
             player_name = xPlayer.getName()
         }
         table.insert(pendingRaces[raceId], inObj)
     end
-    print(dump(raceConfigs))
 end)
 
 RegisterServerEvent('racing:start')
@@ -185,12 +176,8 @@ AddEventHandler('racing:checkpoint', function(race_id, checkpoint, lap)
     end
     local pos = 1
     for i = 1, #activeRaces[race_id] do
-        print(dump("checking our position"))
-        print(dump(i ~= ppid))
-        print(dump(i))
         if i ~= ppid and activeRaces[race_id][i].checkpoint >= checkpoint and activeRaces[race_id][i].lap >= lap  then 
             pos = pos + 1
-            print(dump("checking the position we are behind someone"))
         end
     end
     activeRaces[race_id][ppid].position = pos
@@ -201,7 +188,6 @@ RegisterServerEvent('racing:pendingList')
 AddEventHandler('racing:pendingList', function()
     identifier = ESX.GetPlayerFromId(source).getIdentifier()
     local usource = source
-
     local unstartedRaces = {}
     for k, v in pairs(raceConfigs) do 
         if raceConfigs[k].started == false then
@@ -214,7 +200,6 @@ end)
 RegisterServerEvent('racing:finishedRacesList')
 AddEventHandler('racing:finishedRacesList', function()
     local usource = source
-    print("we are looking at finished races")
     TriggerClientEvent('racing:archivedList', usource, archiveConfigs, archiveRaces)
 end)
 
@@ -228,30 +213,68 @@ AddEventHandler('racing:getLeaderboards', function(race_id)
     end)
 end)
 
+RegisterServerEvent('racing:alertSignup')
+AddEventHandler('racing:alertSignup', function(signUpFlag)
+    identifier = ESX.GetPlayerFromId(source).getIdentifier()
+    local usource = source
+    local alreadySignedUp = false;
+    local pindex = 0
+    for x = 1, #alertSignups do
+        if alertSignups[x].identifier == identifier then 
+            alreadySignedUp = true;
+            pindex = x
+            break
+        end
+    end
+    if signUpFlag then
+        if alreadySignedUp == false then 
+            table.insert(alertSignups, {identifier = identifier})
+        end
+    else
+        table.remove(alertSignups, pindex)
+    end
+end)
+
+function alertPlayers(raceConf)
+    for x = 1, #alertSignups do
+        local xPlayer = ESX.GetPlayerFromIdentifier(alertSignups[x].identifier)
+        xPlayer.triggerEvent('esx:showNotification', 'Race Alert: ' .. raceConf.name .. ' No. Laps ' .. raceConf.laps)
+    end
+end
+
+
+
+RegisterServerEvent('racing:getCrypto')
+AddEventHandler('racing:getCrypto', function(signUpFlag)
+    identifier = ESX.GetPlayerFromId(source).getIdentifier()
+    local usource = source
+    MySQL.Async.fetchAll('Select * from users WHERE identifier = @identifier', {['@identifier'] = identifier}, function(result)
+        print(dump(result))
+        TriggerClientEvent('racing:setCrypto', usource, result[1].racecrypto)
+    end)
+end)
+
+
+
 -- Thread to manage as races finish to translate into Archived format, and to auto DNF after designated time frame
 CreateThread(function()
 	while true do
-		Wait(6000)
+		Wait(300000)
         checkFinished()
         checkDNFs()
 	end
 end)
 
 function checkDNFs()
-    print('we are checking for DNF')
-    for x = 1, #activeRaces do 
+    for x,v in pairs(activeRaces) do 
         if activeRaces[x] ~= nil then
             for y = 1, #activeRaces[x] do 
-                print(dump(activeRaces[x][y]))
                 if activeRaces[x][y].finished == false and not isempty(activeRaces[x][y].last_checkpoint_time) and tonumber(activeRaces[x][y].last_checkpoint_time) < GetGameTimer() - 60000  then 
-                    print("we are DNF person")
                     activeRaces[x][y].finished = true
                     activeRaces[x][y].best_lap = "DNF"
                     activeRaces[x][y].total_time = "DNF"
                     local xPlayer = ESX.GetPlayerFromIdentifier(activeRaces[x][y].identifier)
                     xPlayer.triggerEvent('racing:dnfIssued')
-                else
-                    print('we are not DNF Them YET')
                 end
             end
         end
@@ -259,16 +282,7 @@ function checkDNFs()
 end
 
 function checkFinished()
-    -- MySQL.Async.fetchAll('Select race_key, MIN(finished) as finished from racing_active', {}, function(results)
-    --     if #results > 0 then 
-    --         for i = 1, #results do
-    --             if results[i].finished == 1 then 
-    --                 archiveRace(results[i].race_key)
-    --             end
-    --         end
-    --     end
-    -- end)
-    for x = 1, #activeRaces do 
+    for x,v in pairs(activeRaces) do 
         if activeRaces[x] ~= nil then
             local raceended = true
             for y = 1, #activeRaces[x] do 
@@ -286,20 +300,14 @@ function checkFinished()
 end
 
 function archiveRace(race_id)
-    print('attempting to archive')
     for y = 1, #activeRaces[race_id] do
-        print('checking racer '.. y)
-        print(dump(activeRaces[race_id][y]))
         local identifier = activeRaces[race_id][y].identifier
         local bestLap = activeRaces[race_id][y].best_lap
         local playerName = activeRaces[race_id][y].player_name 
         MySQL.Async.fetchAll('Select * from racing_tracktimes WHERE identifier = @identifier AND track_id = @track_id', {['@identifier'] = identifier, ['@track_id'] = race_id}, function(lookups)
-            print('are we even in the MYSQL Thing')
             if #lookups > 0 then
                 -- Update if the laptime is better
-                print('its not the first time for this person')
                 if isempty(lookups[1].best_lap) or lookups[1].best_lap == 'DNF' or (bestLap ~= 'DNF' and TimeStamp(bestLap) < TimeStamp(lookups[1].best_lap)) then
-                    print('but this time is better')
                     MySQL.Async.execute('UPDATE racing_tracktimes SET `best_lap` = @best_lap WHERE identifier = @identifier AND track_id = @track_id',
                     {
                         ['@best_lap'] = bestLap,
@@ -308,7 +316,6 @@ function archiveRace(race_id)
                     })
                 end
             else    
-                print('its the first time for this person insert time')
                 -- First time racing store data
                 MySQL.Async.execute('INSERT INTO `racing_tracktimes` (`identifier`, `player_name`, `track_id`, `best_lap`) VALUES (@identifier, @player_name, @track_id, @best_lap)', {
                     ['@identifier'] = identifier,
@@ -321,28 +328,52 @@ function archiveRace(race_id)
     end
     table.insert(archiveRaces,activeRaces[race_id])
     table.insert(archiveConfigs,raceConfigs[race_id])
-    print(dump(archiveRaces))
-    removeKey(activeRaces,race_id)
+    if RacingConfig.crypto and #archiveRaces[#archiveRaces] >= RacingConfig.cryptoMin then 
+        distributeCrypto(#archiveRaces)
+    end
     raceConfigs[race_id] = nil
+    activeRaces[race_id] = nil
 end
 
+function distributeCrypto(i)
+    local distributed = {}
+    for x = 1, 3 do
+        local place = nil
+        local lowestTime = nil
+        for y = 1, #archiveRaces[i] do 
+            if (isempty(lowestTime) or (archiveRaces[i][y].total_time ~='DNF' and TimeStamp(archiveRaces[i][y].total_time) < lowestTime)) and setNotContains(distributed,archiveRaces[i][y].identifier) then 
+                place = y
+                lowestTime = TimeStamp(archiveRaces[i][y].total_time)
+            end
+        end
+        if not isempty(place) then
+            table.insert(distributed,{identifier = archiveRaces[i][place].identifier, crypto = (tonumber(RacingConfig.cryptoPayout) / x)})
+        end
+    end
+    if #distributed == 3 then 
+        for y = 1, #archiveRaces[i] do
+            if setNotContains(distributed,archiveRaces[i][y].identifier) then
+                table.insert(distributed,{identifier = archiveRaces[i][y].identifier, crypto = (tonumber(RacingConfig.cryptoPayout) / 3) -1})
+            end
+        end
+        for x = 1, #distributed do
+            MySQL.Async.execute('UPDATE users SET `racecrypto` =  racecrypto + @crypto WHERE identifier = @identifier',
+                {
+                    ['@identifier'] = distributed[x].identifier,
+                    ['@crypto'] = distributed[x].crypto
+                })
+        end
+    end
+end
 
--- Cleanup server start/stop
-
--- AddEventHandler('onResourceStart', function(resource)
--- 	if resource == GetCurrentResourceName() then
--- 		Citizen.Wait(5000)
---         MySQL.Async.execute('TRUNCATE `racing_active`',{})
---         MySQL.Async.execute('TRUNCATE `racing_pending`',{})
--- 	end
--- end)
-
--- AddEventHandler('onResourceStop', function(resource)
--- 	if resource == GetCurrentResourceName() then
---         MySQL.Async.execute('TRUNCATE `racing_active`',{})
---         MySQL.Async.execute('TRUNCATE `racing_pending`',{})
--- 	end
--- end)
+function setNotContains(table,value)
+    for x = 1, #table do
+        if value == table[x].identifier then
+            return false
+        end
+    end
+    return true
+end
 
 function dump(o)
     if type(o) == 'table' then

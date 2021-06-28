@@ -1,8 +1,7 @@
 <template>
   <div>
-    <h2>Recent Race Stats</h2>
+    <h2>Races This Session</h2>
     <div v-if="archiveObject" class="raceStats">
-      <!-- <div v-for="(track,index) in archiveObject" :key="track.id" class="togglable"> -->
       <div v-for="index in archiveObject.length" :key="index" class="togglable">
         <div class="row" @click="toggleView(index)">
           <h4 v-html="archiveObject[archiveObject.length - index].name" class="col-md-6" />
@@ -74,6 +73,7 @@ export default {
       event => {
         const item = event.data || event.detail;
         if (item.raceData) {
+          console.log( item)
           this.$store.state.home.finishedRaces = item.raceInfo;
           this.$store.state.home.finishedRacesRacers = item.racers;
         }

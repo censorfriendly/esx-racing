@@ -23,7 +23,8 @@ export default new Vuex.Store({
     home: {
         finishedRaces: {},
         finishedRacesRacers: {} 
-    }
+    },
+    crypto: 0
  },
  getters: {},
  mutations: {},

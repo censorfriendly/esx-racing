@@ -1,5 +1,9 @@
 <template>
   <div class="trackScreen">
+      <div class="mb" style="text-align:end">
+        <span>Sign up for alerts when new races start</span>
+        <input type="checkbox" @click="toggleAlert" />
+      </div>
       <div v-for="(track,index) in trackObject" :key="index">
           <div class="row" :class="{evenRow: index % 2 == 0}">
             <div class="col-md-1 ut-vertAlignCenter center-md"><h4 v-html="index + 1"/></div>
@@ -38,7 +42,8 @@ export default {
       selectedRace : 0,
       formActive : false,
       config: {
-        laps: 1
+        laps: 1,
+        alert: false
       }
     };
   },
@@ -69,6 +74,12 @@ export default {
       },
       clearRace: function() {
         this.formActive = 0;
+      },
+      toggleAlert: function() {
+        this.config.alert = !this.config.alert;
+        Nui.send('alertSignup',{
+          signup: this.config.alert,
+        })
       }
   },
   computed: {

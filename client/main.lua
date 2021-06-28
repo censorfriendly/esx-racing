@@ -75,15 +75,15 @@ CreateThread(function()
 	end
 end)
 
-RegisterCommand("race",function(source,args)
-    -- local player = GetPlayerPed(-1)
-	local checkpointType = 31
-	RemoveBlip(startPoint)
-	checkPos = 1
-	raceLap = 1
-	finishLine = false
-	TriggerServerEvent('racing:start',raceId)
-end)
+-- RegisterCommand("race",function(source,args)
+--     -- local player = GetPlayerPed(-1)
+-- 	local checkpointType = 31
+-- 	RemoveBlip(startPoint)
+-- 	checkPos = 1
+-- 	raceLap = 1
+-- 	finishLine = false
+-- 	TriggerServerEvent('racing:start',raceId)
+-- end)
 
 RegisterCommand("raceApp",function(source,args)
     local playerPed = PlayerPedId()
@@ -228,12 +228,30 @@ RegisterNUICallback('quitRace', function(params,cb)
 	cb('ok');
 end)
 
+RegisterNUICallback('getCrypto', function(params,cb)
+	TriggerServerEvent('racing:getCrypto')
+	cb('ok');
+end)
+
+RegisterNetEvent("racing:setCrypto")
+AddEventHandler("racing:setCrypto", function(crypto)
+	SendNUIMessage({
+		cryptoEvent = true,
+		crypto = crypto
+	})
+end)
+
 -- Track Screen
 RegisterNUICallback('getTracks', function(params,cb)
 	SendNUIMessage({
 		trackListEvent = true,
 		tracks = Races
 	})
+	cb('ok');
+end)
+RegisterNUICallback('alertSignup', function(params,cb)
+	print(dump(params))
+	TriggerServerEvent('racing:alertSignup',params.signup)
 	cb('ok');
 end)
 
