@@ -8,7 +8,8 @@ version '0.0.3'
 
 client_scripts {
 	'config.lua',
-	'client/main.lua'
+	'client/main.lua',
+    'tracks/**/**.lua',
 }
 
 files {
@@ -23,5 +24,6 @@ server_scripts {
     '@mysql-async/lib/MySQL.lua',
     '@async/async.lua',
 	'config.lua',
-	'server/main.lua'
+	'server/main.lua',
+    'tracks/**/**.lua'
 }

@@ -262,7 +262,7 @@ end)
 
 RegisterNUICallback('initApp', function(data,cb)
 	local data = ESX.GetPlayerData()
-
+	
 	SendNUIMessage({
 		initApp = true,
 		identifier = data.identifier
