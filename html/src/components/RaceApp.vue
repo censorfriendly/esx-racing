@@ -103,7 +103,6 @@ export default {
             this.index = 0;
         }
         if (item.cryptoEvent) {
-          console.log(item);
           this.$store.state.crypto = item.crypto;
         }
       },
