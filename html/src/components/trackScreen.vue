@@ -1,5 +1,5 @@
 <template>
-  <div class="trackScreen">
+  <div class="trackScreen" ref="trackScreen">
       <div class="mb" style="text-align:end">
         <span>Sign up for alerts when new races start</span>
         <input type="checkbox" @click="toggleAlert" />
@@ -54,6 +54,7 @@ export default {
       setRace: function(index) {
         this.selectedRace = index;
         this.formActive = 1;
+        document.getElementsByClassName('interior-page')[0].scrollTop = 0;
       },
       createRace: function() {
         if(!this.$store.state.raceApp.joinedRace) {

@@ -9,7 +9,7 @@
             <div class="tab col-md-2" :class="{active:index==3}" @click="triggerTab(3)">Leaderboards</div>
         </div>
         <hr/>
-        <div class="interior-page">
+        <div class="interior-page" v-dragscroll>
             <div class="loading-screen" :class="{active:loadScreen}">
                 <div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
             </div>
@@ -152,6 +152,7 @@ export default {
         height: 290px;
         overflow-y:auto;
         position: relative;
+        cursor: grab;
     }
     .loading-screen {
         width:100%;
@@ -176,6 +177,7 @@ export default {
       margin: 5%;
       margin-top: 2%;
       box-sizing: border-box;
+      cursor: grab;
       &.active {
         visibility: visible;
         opacity: 1;
