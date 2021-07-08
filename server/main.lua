@@ -38,7 +38,7 @@ AddEventHandler('racing:finishedStats', function(stats)
             break
         end
     end
-    TriggerClientEvent('chatMessage', source, "", {0,0,0}, 'Finished Race ')
+    TriggerClientEvent('esx:showNotification', source, 'Finished Race ')
     checkFinished()
 end)
 
@@ -165,23 +165,14 @@ RegisterServerEvent('racing:checkpoint')
 AddEventHandler('racing:checkpoint', function(race_id, checkpoint, lap)
     local xPlayer = ESX.GetPlayerFromId(source)
     _identifier = xPlayer.getIdentifier()
-    local ppid = 1
     for i = 1, #activeRaces[race_id] do
         if activeRaces[race_id][i].identifier == _identifier then 
-            ppdid = i
-            activeRaces[race_id][i].checkpoint = tonumber(checkpoint)
-            activeRaces[race_id][i].lap = tonumber(lap)
+            activeRaces[race_id][i].checkpoint = tonumber(activeRaces[race_id][i].checkpoint) + 1;
             activeRaces[race_id][i].last_checkpoint_time = GetGameTimer()
+            break;
         end
     end
-    local pos = 1
-    for i = 1, #activeRaces[race_id] do
-        if i ~= ppid and activeRaces[race_id][i].checkpoint >= checkpoint and activeRaces[race_id][i].lap >= lap  then 
-            pos = pos + 1
-        end
-    end
-    activeRaces[race_id][ppid].position = pos
-    xPlayer.triggerEvent('racing:updatePos',pos)
+    xPlayer.triggerEvent('racing:updatePos',activeRaces[race_id])
 end)
 
 RegisterServerEvent('racing:pendingList')
@@ -206,7 +197,7 @@ end)
 RegisterServerEvent('racing:getLeaderboards')
 AddEventHandler('racing:getLeaderboards', function(race_id)
     local usource = source
-    MySQL.Async.fetchAll('SELECT * FROM racing_tracktimes WHERE track_id = @trackId Order By track_id Desc, best_lap Desc Limit 10', {['@trackId'] = race_id}, function(results)
+    MySQL.Async.fetchAll('SELECT * FROM racing_tracktimes WHERE track_id = @trackId Order By track_id Desc, best_lap ASC Limit 10', {['@trackId'] = race_id}, function(results)
         if #results > 0 then 
             TriggerClientEvent('racing:sendLeaderboards', usource, results)
         end
@@ -268,7 +259,7 @@ function checkDNFs()
     for x,v in pairs(activeRaces) do 
         if activeRaces[x] ~= nil then
             for y = 1, #activeRaces[x] do 
-                if activeRaces[x][y].finished == false and not isempty(activeRaces[x][y].last_checkpoint_time) and tonumber(activeRaces[x][y].last_checkpoint_time) < GetGameTimer() - 60000  then 
+                if activeRaces[x][y].finished == false and not isempty(activeRaces[x][y].last_checkpoint_time) and tonumber(activeRaces[x][y].last_checkpoint_time) < GetGameTimer() - 300000  then 
                     activeRaces[x][y].finished = true
                     activeRaces[x][y].best_lap = "DNF"
                     activeRaces[x][y].total_time = "DNF"
@@ -346,7 +337,7 @@ function distributeCrypto(i)
             end
         end
         if not isempty(place) then
-            table.insert(distributed,{identifier = archiveRaces[i][place].identifier, crypto = (tonumber(RacingConfig.cryptoPayout) / x)})
+            table.insert(distributed,{identifier = archiveRaces[i][place].identifier, crypto = (tonumber(RacingConfig.cryptoPayout) / x), bestLap = archiveRaces[i][place].best_lap})
         end
     end
     if #distributed == 3 then 
@@ -362,6 +353,16 @@ function distributeCrypto(i)
                     ['@crypto'] = distributed[x].crypto
                 })
         end
+        -- check if this time was the fastest lap for the track
+        MySQL.Async.fetchAll('SELECT * FROM racing_tracktimes WHERE track_id = @trackId Order By track_id Desc, best_lap Desc Limit 1', {['@trackId'] = archiveConfigs[i].id}, function(results)
+            if #results > 0 and results[1].identifier == distributed[1].identifier and distributed[1].bestLap == results[1].best_lap then 
+                MySQL.Async.execute('UPDATE users SET `racecrypto` =  racecrypto + @crypto WHERE identifier = @identifier',
+                {
+                    ['@identifier'] = distributed[1].identifier,
+                    ['@crypto'] = (RacingConfig.cryptoPayout / 2)
+                })
+            end
+        end)
     end
 end
 

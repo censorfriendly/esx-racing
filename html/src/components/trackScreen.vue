@@ -14,8 +14,9 @@
       </div>
       <div class="form col-md-12" :class="{active:formActive}">
         <div class="p-2">
-            <strong class="col-md-6">No. of Laps</strong>
-            <input class="col-md-offset-3 numberInput" v-model="config.laps">
+            <strong v-if="circuit" class="col-md-6">No. of Laps</strong>
+            <input v-if="circuit" class="col-md-offset-3 numberInput" v-model="config.laps">
+            <strong v-else class="col-md-12">This is a Sprint Race</strong>
             <input type="hidden" v-model="config.race_id"/>
             <div class="row ut-vertAlignCenter mt center">
               <div class="col-md-6">
@@ -41,6 +42,7 @@ export default {
     return {
       selectedRace : 0,
       formActive : false,
+      circuit : false,
       config: {
         laps: 1,
         alert: false
@@ -54,6 +56,7 @@ export default {
       setRace: function(index) {
         this.selectedRace = index;
         this.formActive = 1;
+        this.circuit = this.$store.state.trackList[index].Config.Type == 'Circuit';
         document.getElementsByClassName('interior-page')[0].scrollTop = 0;
       },
       createRace: function() {
@@ -66,6 +69,7 @@ export default {
           this.$store.state.raceApp.joinedRace = true;
           this.$store.state.raceApp.isOwner = true;
           this.$store.state.raceApp.race_id = this.selectedRace + 1;
+          this.$parent.triggerTab(1);
         }
         else {
           this.formActive = 0;

@@ -72,6 +72,7 @@ export default {
           }
           this.$store.state.raceApp.error = '';
           this.index = i;
+          document.getElementsByClassName('interior-page')[0].scrollTop = 0;
       }
   },
   mounted() {

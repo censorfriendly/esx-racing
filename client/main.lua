@@ -55,15 +55,18 @@ CreateThread(function()
 					
 					if activeRace.Markers[checkPos + 2] ~= nil and not finishLine then
 						checkpoint[checkPos + 2] = AddBlipForCoord(activeRace.Markers[checkPos + 2].x, activeRace.Markers[checkPos + 2].y, activeRace.Markers[checkPos + 2].z)
+						ShowNumberOnBlip(checkpoint[checkPos + 2], checkPos + 2)
 					elseif raceConfig.laps > raceLap and not finishLine then
 						local pos = (checkPos + 2) - #checkpoint
 						checkpoint[pos] = AddBlipForCoord(activeRace.Markers[pos].x, activeRace.Markers[pos].y, activeRace.Markers[pos].z)
+						ShowNumberOnBlip(checkpoint[pos], pos)
 					else 
 						if activeRace.Config.Type == 'Sprint' then
 							finishLine = true
 						end
 						if not finishLine then
 							checkpoint[1] = AddBlipForCoord(activeRace.Markers[1].x, activeRace.Markers[1].y, activeRace.Markers[1].z)
+							ShowNumberOnBlip(checkpoint[1], 1)
 							finishLine = true
 						end
 					end
@@ -102,6 +105,7 @@ function startRace(race_Id)
 		RemoveBlip(startPoint)
 	end
 	checkpoint[1] = AddBlipForCoord(activeRace.Markers[1].x, activeRace.Markers[1].y, activeRace.Markers[1].z)
+	ShowNumberOnBlip(checkpoint[1], 1)
 	checkPos = 1
 	raceLap = 1
 	finishLine = false
@@ -129,6 +133,7 @@ function startRace(race_Id)
 	RemoveBlip(checkpoint[1])
 	for i=checkPos, checkPos + 2 do 
 		checkpoint[i] = AddBlipForCoord(activeRace.Markers[i].x, activeRace.Markers[i].y, activeRace.Markers[i].z)
+		ShowNumberOnBlip(checkpoint[i], i)
 	end
 	SetBlipRoute(checkpoint[checkPos], true)
 	SetBlipRouteColour(checkpoint[checkPos],2)
@@ -181,10 +186,25 @@ AddEventHandler("racing:startClient", function(raceConf)
 end)
 
 RegisterNetEvent("racing:updatePos")
-AddEventHandler("racing:updatePos", function(position)
+AddEventHandler("racing:updatePos", function(positionTable)
+	data = ESX.GetPlayerData()
+    table.sort(positionTable, function(a,b)
+		if a.checkpoint ~= b.checkpoint then
+            return a.checkpoint > b.checkpoint
+        end
+        return a.last_checkpoint_time < b.last_checkpoint_time
+    end)
+	
+    local pos = 0
+    for i = 1, #positionTable do
+        if positionTable[i].identifier == data.identifier then 
+            pos = i
+            break;
+        end
+    end
 	SendNUIMessage({
 		positionUpdate = true,
-		position = position
+		position = pos
 	})
 end)
 
@@ -250,7 +270,6 @@ RegisterNUICallback('getTracks', function(params,cb)
 	cb('ok');
 end)
 RegisterNUICallback('alertSignup', function(params,cb)
-	print(dump(params))
 	TriggerServerEvent('racing:alertSignup',params.signup)
 	cb('ok');
 end)
