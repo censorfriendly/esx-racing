@@ -134,6 +134,7 @@ AddEventHandler('racing:join', function(raceId,setOwner,laps)
         }
         table.insert(pendingRaces[raceId], inObj)
     end
+    TriggerClientEvent('racing:raceInfo', usource,pendingRaces[raceId])
 end)
 
 RegisterServerEvent('racing:start')
@@ -234,6 +235,11 @@ function alertPlayers(raceConf)
 end
 
 
+RegisterServerEvent('racing:raceDetails')
+AddEventHandler('racing:raceDetails', function(raceId)
+    
+    TriggerClientEvent('racing:raceInfo', source, pendingRaces[raceId])
+end)
 
 RegisterServerEvent('racing:getCrypto')
 AddEventHandler('racing:getCrypto', function(signUpFlag)

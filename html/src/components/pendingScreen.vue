@@ -12,8 +12,8 @@
     <div v-else >
       <div>
         <button @click="getPlayersInRace">Refresh Racers List</button>
-        <h3>Active Race: <span v-html="trackObject[raceId - 1].Config.Name"/> </h3>
-        <div class="row">
+        <h3>Active Race: <span v-html="trackObject[raceId - 1].Config.Name"/></h3>
+        <div class="row mb-2">
           <div class="col-md-4 ut-vertAlignCenter" v-if="isOwner">
             <button @click="startRace(raceId)" class="">Start Race</button>
           </div>
@@ -25,6 +25,11 @@
           </div>
           <div class="col-md-4 ut-vertAlignCenter" v-else>
             <button @click="quitRace()" class="">Quit Race</button>
+          </div>
+        </div>
+        <div v-for="(racer,index) in racersList" :key="index">
+          <div class="center row" :class="{evenRow: index % 2 == 0}">
+            <div class="col-md-12"><h4 v-html="racer.player_name"/></div>
           </div>
         </div>
       </div>
@@ -42,6 +47,7 @@ export default {
   data() {
     return {
       participatingRace: {},
+      racerList: []
     };
   },
   methods: {
@@ -64,17 +70,7 @@ export default {
         Nui.send('getPendingRaces',{})
     },
     getPlayersInRace: function() {
-        // Nui.send('raceDetails',{raceId})
-      return "null";
-    },
-    getParticipatingRace: function() {
-      for(var x = 0; x < this.pendingObject.length; x++) {
-        if(this.pendingObject[x].race_id == this.race_id) {
-          this.participatingRace = x;
-          return x;
-        }
-      }
-      return false;
+        Nui.send('raceDetails',{raceId:this.raceId})
     },
     checkIfOwner: function() {
       if(this.pendingObject.length > 0 && !this.isOwner) {
@@ -101,6 +97,10 @@ export default {
         if (item.racingListEvent) {
             // this.checkIfOwner();
         }
+        if (item.raceInfo) {
+          this.racerList = item.info;
+          
+        }
       },
       false,
     );
@@ -123,6 +123,9 @@ export default {
     },
     raceId: function() {
       return this.$store.state.raceApp.race_id;
+    },
+    racersList: function() {
+      return this.racerList;
     }
   }
 };

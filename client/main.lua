@@ -185,6 +185,15 @@ AddEventHandler("racing:startClient", function(raceConf)
 	startRace(raceConfig.id)
 end)
 
+RegisterNetEvent("racing:raceInfo")
+AddEventHandler("racing:raceInfo", function(raceInfo)
+	SendNUIMessage({
+		raceInfo = true,
+		info = raceInfo
+	})
+end)
+
+
 RegisterNetEvent("racing:updatePos")
 AddEventHandler("racing:updatePos", function(positionTable)
 	data = ESX.GetPlayerData()
@@ -245,6 +254,11 @@ RegisterNUICallback('closeApp', function(params,cb)
 end)
 RegisterNUICallback('quitRace', function(params,cb)
 	TriggerServerEvent('racing:quit')
+	cb('ok');
+end)
+
+RegisterNUICallback('raceDetails', function(params,cb)
+	TriggerServerEvent('racing:raceDetails', params.raceId)
 	cb('ok');
 end)
 
@@ -312,7 +326,6 @@ RegisterNUICallback('raceStats', function(params,cb)
 end)
 
 RegisterNUICallback('getLeaderboards', function(params,cb)
-	print(dump(params))
 	TriggerServerEvent('racing:getLeaderboards',params.race_id)
 	cb('ok');
 end)
@@ -323,7 +336,6 @@ end)
 
 RegisterNetEvent('racing:sendLeaderboards')
 AddEventHandler('racing:sendLeaderboards', function(leaderboard)
-	print(dump(leaderboard))
 	SendNUIMessage({
 		leaderboardEvent = true,
 		list = leaderboard
