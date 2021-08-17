@@ -26,8 +26,8 @@
                 <leaderboardScreen />
             </div>
         </div>
-        <div class="rapp_currency">
-          MRC: <span v-html="crypto" />
+        <div class="rapp_currency" v-if="cryptoEnabled">
+           <span v-html="cryptoName" />: <span v-html="crypto" />
         </div>
   </div>
 </template>
@@ -93,6 +93,8 @@ export default {
         }
         if (item.initApp) {
             this.$store.state.global.identifier = item.identifier;
+            this.$store.state.global.cryptoName = item.cryptoName;
+            this.$store.state.global.cryptoEnabled = item.cryptoEnabled;
         }
         if (item.endRace || item.dnf) {
             this.$store.state.raceApp.joinedRace = false;
@@ -116,6 +118,16 @@ export default {
     },
     crypto: function() {
       return this.$store.state.crypto;
+    },
+    cryptoName: function() {
+      return this.$store.state.global.cryptoName;
+    },
+    cryptoEnabled: function() {
+      if(this.$store.state.global.cryptoEnabled) {
+        return true;
+      }
+      return false;
+      // return this.$store.state.global.cryptoEnabled;
     }
   }
 

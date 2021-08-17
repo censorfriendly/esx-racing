@@ -298,7 +298,9 @@ RegisterNUICallback('initApp', function(data,cb)
 	
 	SendNUIMessage({
 		initApp = true,
-		identifier = data.identifier
+		identifier = data.identifier,
+		cryptoName = RacingConfig.cryptoName,
+		cryptoEnabled = RacingConfig.crypto
 	})
 
 	SendNUIMessage({

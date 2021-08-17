@@ -18,7 +18,9 @@ export default new Vuex.Store({
         error: ''
     },
     global: {
-        identifier : null
+        identifier : null,
+        cryptoName: '',
+        cryptoEnabled: false
     },
     home: {
         finishedRaces: {},
