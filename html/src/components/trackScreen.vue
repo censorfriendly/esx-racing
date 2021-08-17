@@ -9,7 +9,7 @@
             <div class="col-md-1 ut-vertAlignCenter center-md"><h4 v-html="index + 1"/></div>
             <div class="col-md-5 ut-vertAlignCenter center-md"><h4 v-html="track.Config.Name"/></div>
             <div class="col-md-3 ut-vertAlignCenter"><button class="btn" @click="setRace(index)">Create Race</button></div>
-            <div class="col-md-3 ut-vertAlignCenter"><button class="btn">View Race</button></div>
+            <div class="col-md-3 ut-vertAlignCenter"><button class="btn" @click="viewRace(index)">View Race</button></div>
           </div>
       </div>
       <div class="form col-md-12" :class="{active:formActive}">
@@ -58,6 +58,10 @@ export default {
         this.formActive = 1;
         this.circuit = this.$store.state.trackList[index].Config.Type == 'Circuit';
         document.getElementsByClassName('interior-page')[0].scrollTop = 0;
+      },
+      viewRace: function(index) {
+        Nui.send('showRace',{raceId: index + 1})
+        Nui.send('closeApp',{})
       },
       createRace: function() {
         if(!this.$store.state.raceApp.joinedRace) {

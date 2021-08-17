@@ -78,18 +78,10 @@ CreateThread(function()
 	end
 end)
 
--- RegisterCommand("race",function(source,args)
---     -- local player = GetPlayerPed(-1)
--- 	local checkpointType = 31
--- 	RemoveBlip(startPoint)
--- 	checkPos = 1
--- 	raceLap = 1
--- 	finishLine = false
--- 	TriggerServerEvent('racing:start',raceId)
--- end)
 
 RegisterCommand("raceApp",function(source,args)
     local playerPed = PlayerPedId()
+	cleanCheckpoint();
 	SetNuiFocus(true,true)
 	SetPedUsingActionMode(playerPed, -1, -1, 1)
 	SendNUIMessage({
@@ -241,6 +233,13 @@ function GetIdentifierWithoutLicense(Identifier)
     return string.gsub(Identifier, "license", "")
 end
 
+function cleanCheckpoint()
+	if not raceStarted then
+		for i=1, #checkpoint do 
+			RemoveBlip(checkpoint[i])
+		end
+	end
+end
 
 -- Race App Code beneath
 -- Globals
@@ -329,6 +328,22 @@ end)
 
 RegisterNUICallback('getLeaderboards', function(params,cb)
 	TriggerServerEvent('racing:getLeaderboards',params.race_id)
+	cb('ok');
+end)
+
+
+RegisterNUICallback('showRace', function(params,cb)
+    -- local player = GetPlayerPed(-1)
+	local raceId = params.raceId
+	local showRace = Races[raceId]
+	cleanCheckpoint();
+	if(startPoint) then 
+		RemoveBlip(startPoint)
+	end
+	for i=1, #showRace.Markers do 
+		checkpoint[i] = AddBlipForCoord(showRace.Markers[i].x, showRace.Markers[i].y, showRace.Markers[i].z)
+		ShowNumberOnBlip(checkpoint[i], i)
+	end
 	cb('ok');
 end)
 
