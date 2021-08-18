@@ -10,6 +10,7 @@ raceId = 1
 finished = false
 lastLap = nil
 raceConfig = nil
+gpsArray = {}
 
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 CreateThread(function()
@@ -31,7 +32,11 @@ CreateThread(function()
 			local coords = activeRace.Markers[checkPos]
 			local position = GetEntityCoords(player)
 			if GetDistanceBetweenCoords(position.x, position.y, position.z, coords.x, coords.y, coords.z, 0 , false) < 25.0 then
-				-- Passed the checkpoint, delete map blip and checkpoint
+
+				ClearGpsMultiRoute()
+
+				-- Start a new route
+				StartGpsMultiRoute(018, true, true)
 				RemoveBlip(checkpoint[checkPos])
 				checkPointEvent()
 				if checkPos == 1 and raceLap > 1 then
@@ -50,15 +55,14 @@ CreateThread(function()
 					if activeRace.Config.Type == 'Sprint' and checkPos == #checkpoint then
 						finished = true
 					end
-					SetBlipRoute(checkpoint[checkPos], true)
-					SetBlipRouteColour(checkpoint[checkPos],2)
-					
 					if activeRace.Markers[checkPos + 2] ~= nil and not finishLine then
 						checkpoint[checkPos + 2] = AddBlipForCoord(activeRace.Markers[checkPos + 2].x, activeRace.Markers[checkPos + 2].y, activeRace.Markers[checkPos + 2].z)
 						ShowNumberOnBlip(checkpoint[checkPos + 2], checkPos + 2)
+						table.insert(gpsArray,activeRace.Markers[checkPos + 2])
 					elseif raceConfig.laps > raceLap and not finishLine then
 						local pos = (checkPos + 2) - #checkpoint
 						checkpoint[pos] = AddBlipForCoord(activeRace.Markers[pos].x, activeRace.Markers[pos].y, activeRace.Markers[pos].z)
+						table.insert(gpsArray,activeRace.Markers[pos])
 						ShowNumberOnBlip(checkpoint[pos], pos)
 					else 
 						if activeRace.Config.Type == 'Sprint' then
@@ -67,12 +71,21 @@ CreateThread(function()
 						if not finishLine then
 							checkpoint[1] = AddBlipForCoord(activeRace.Markers[1].x, activeRace.Markers[1].y, activeRace.Markers[1].z)
 							ShowNumberOnBlip(checkpoint[1], 1)
+							table.insert(gpsArray,activeRace.Markers[1])
 							finishLine = true
 						end
 					end
 				else
 					finishRace()
 				end
+				
+				for i=1, 3 do 
+					if(gpsArray[i]) then 
+						AddPointToGpsMultiRoute(gpsArray[i].x, gpsArray[i].y, gpsArray[i].z)
+					end
+				end
+				table.remove(gpsArray,1)
+				SetGpsMultiRouteRender(true)
 			end
 		end
 	end
@@ -122,13 +135,21 @@ function startRace(race_Id)
 	Wait(3000)
 	raceStarted = true
 	
+	ClearGpsMultiRoute()
+
+	-- Start a new route
+	StartGpsMultiRoute(018, true, true)
 	RemoveBlip(checkpoint[1])
 	for i=checkPos, checkPos + 2 do 
 		checkpoint[i] = AddBlipForCoord(activeRace.Markers[i].x, activeRace.Markers[i].y, activeRace.Markers[i].z)
 		ShowNumberOnBlip(checkpoint[i], i)
+		table.insert(gpsArray,activeRace.Markers[i])
+		AddPointToGpsMultiRoute(activeRace.Markers[i].x, activeRace.Markers[i].y, activeRace.Markers[i].z)
 	end
-	SetBlipRoute(checkpoint[checkPos], true)
-	SetBlipRouteColour(checkpoint[checkPos],2)
+	table.remove(gpsArray,1)
+	-- SetBlipRoute(checkpoint[checkPos], true)
+	-- SetBlipRouteColour(checkpoint[checkPos],2)
+	SetGpsMultiRouteRender(true)
 	SendNUIMessage({
 		startrace = true
 	})
@@ -143,6 +164,7 @@ function finishRace()
 end
 
 function resetFlags()
+	ClearGpsMultiRoute()
 	checkPos = 1
 	checkpoint = {}
 	raceStarted = false
