@@ -19,7 +19,13 @@ CreateThread(function()
 		Wait(0)
 		if raceStarted then
 			local coords = activeRace.Markers[checkPos]
-			DrawMarker(2, coords.x, coords.y, coords.z + 2, 0.0, 0.0, 0.0, 0.0, 180.0, 0.0, 2.0, 2.0, 2.0, 255, 128, 0, 50, false, true, 2, nil, nil, false)
+			local type = 2;
+			if(checkPos == 1 and finishLine) then 
+				type = 4;
+			elseif(checkPos == 1 and raceLap == 1) then 
+				type = 4
+			end
+			DrawMarker(type, coords.x, coords.y, coords.z + 2, 0.0, 0.0, 0.0, 0.0, 180.0, 0.0, 2.0, 2.0, 2.0, 38, 222, 99, 50, true, true, 2, nil, nil, false)
 		end
 	end
 end)
@@ -71,6 +77,7 @@ CreateThread(function()
 						if not finishLine then
 							checkpoint[1] = AddBlipForCoord(activeRace.Markers[1].x, activeRace.Markers[1].y, activeRace.Markers[1].z)
 							ShowNumberOnBlip(checkpoint[1], 1)
+							SetBlipColour(checkpoint[1],25)
 							table.insert(gpsArray,activeRace.Markers[1])
 							finishLine = true
 						end
