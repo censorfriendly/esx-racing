@@ -1,0 +1,217 @@
+
+#app {
+    // display:none;
+    font-family: 'Open Sans', sans-serif;
+    background: transparent;
+    &.racing-active{
+      display: block;
+      .racingStats {
+        display: block;
+      }
+    }
+    &.racing-app {
+      display: block;
+      .rapp {
+        display: block;
+      }
+    }
+  
+    
+    table {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        outline: 0;
+        font-size: 100%;
+        vertical-align: baseline;
+        background: transparent;
+        td {
+            padding:10px;
+        }
+    }
+    .grid {
+      display: flex;
+      justify-content: space-between;
+  
+      &.center {
+        text-align: center;
+      }
+    }
+    .grid.third {
+      > div {
+        flex-basis: 33.33%;
+      }
+    }
+  }
+  
+  .rapp {
+      display: none;
+      background-color:#D3D3D3;
+      position: absolute;
+      // border-top-left-radius: 15%;
+      // border-top-right-radius: 15%;
+      border-radius: 7%;
+      bottom:5%;
+      right:5%;
+      padding:15px;
+      min-width: 35%;
+      max-height: 400px;
+      height: 400px;
+      overflow: hidden;
+      border: 4px solid black;
+      -webkit-box-shadow: 0px 5px 22px 5px rgb(0 0 0 / 63%);
+      box-shadow: 0px 5px 22px 5px rgb(0 0 0 / 63%);
+      .rapp_currency {
+        position: absolute;
+        bottom:0px;
+        right:10%;
+        font-weight: bold;
+      }
+      h1 {
+        text-align: center;
+      }
+      .interior-page {
+          height: 290px;
+          overflow-y:auto;
+          position: relative;
+          cursor: grab;
+      }
+      .loading-screen {
+          width:100%;
+          height: 100%;
+          position: absolute;
+          opacity: 0;
+          transition: .5s;
+          visibility: hidden;
+          &.active {
+              visibility: visible;
+              opacity: 1;
+          }
+      }
+      .screen-container {
+        position: absolute;
+        top:0px;
+        left:0px;
+        visibility: hidden;
+        opacity: 0;
+        transition: all .5s;
+        width: 90%;
+        margin: 5%;
+        margin-top: 2%;
+        box-sizing: border-box;
+        cursor: grab;
+        &.active {
+          visibility: visible;
+          opacity: 1;
+        }
+      }
+      ::-webkit-scrollbar {
+      display: none;
+  }
+  }
+  .tab {
+      cursor: pointer;
+      font-weight: bold;
+      padding:6px 9px;
+      border-radius: 7px;
+      &.active {
+          background-color: orange;
+          color: black;
+      }
+  }
+  .error {
+      color:red;
+  }
+  .evenRow {
+    background-color: #FFFFFF;
+  }
+  
+.racingStats {
+    display: none;
+    position: absolute;
+    bottom:15%;
+    right:5%;
+    height: auto;
+    background: rgba(#000000, 0.2);
+    color:#FFFFFF;
+    border-radius: 25px;
+    h3 {
+        margin: 0;
+        padding: 0;
+        font-weight: bold;
+        font-size: 1.5rem;
+        line-height: 1.5rem;
+    }
+}
+
+.countdown-container {
+    position: absolute;
+    // display: none;
+    left: 50%;
+    width: 30%;
+    transform: translateX(-50%);
+    top:25%;
+    > div {
+        display: flex;
+        justify-content: space-between;
+        align-items: stretch;
+    }
+    .signal {
+        display: flex;
+        width: 25px;
+        height: 25px;
+        border-radius: 50%;
+        transition: all .25s ease-in-out;
+        border: solid transparent 2px;
+        background-color: transparent;
+        opacity: 0;
+        -webkit-box-shadow: 0px 4px 15px -4px #000000; 
+        box-shadow: 0px 4px 15px -4px #000000;
+        &.prep-1 {
+            opacity: 1;
+            border: solid #FF2211 2px;
+            background-color: #FF2211;
+        }
+        &.prep-2,&.prep-4, &.prep-6, &.prep-7 {
+            opacity: 0;
+            border: solid #FFFFFF 2px;
+            background-color: #FFFFFF;
+        }
+        &.prep-3 {
+            opacity: 1;
+            border: solid #F47C32 2px;
+            background-color: #F47C32;
+        }
+        &.prep-5 {
+            opacity: 1;
+            border: solid #eea943 2px;
+            background-color: #eea943;
+        }
+        &.start {
+            opacity: 1;
+            border: solid #22FF11 2px;
+            background-color: #22FF11;
+        }
+    }
+}
+.trackScreen {
+    
+.form {
+    position: absolute;
+    width:80%;
+    left:10%;
+    top:0px;
+    overflow: hidden;
+    max-height: 0px;
+    transition: .25s ease-in;
+    background-color: white;
+    border-bottom-left-radius: 15px;
+    border-bottom-right-radius: 15px;
+    -webkit-box-shadow: 4px 6px 17px 1px rgba(0,0,0,0.44); 
+    box-shadow: 4px 6px 17px 1px rgba(0,0,0,0.44);
+    &.active {
+      max-height: 100%;
+    }
+  }
+  
+}

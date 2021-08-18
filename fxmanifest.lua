@@ -4,10 +4,11 @@ game 'gta5'
 
 description 'Racing script to build'
 
-version '0.0.3'
+version '0.0.4'
 
 client_scripts {
 	'config.lua',
+	'client/functions.lua',
 	'client/main.lua',
     'tracks/**/**.lua',
 }
@@ -24,6 +25,7 @@ server_scripts {
     '@mysql-async/lib/MySQL.lua',
     '@async/async.lua',
 	'config.lua',
+	'server/functions.lua',
 	'server/main.lua',
     'tracks/**/**.lua'
 }

@@ -223,23 +223,6 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped>
-.racingStats {
-    display: none;
-    position: absolute;
-    bottom:15%;
-    right:5%;
-    height: auto;
-    background: rgba(#000000, 0.2);
-    color:#FFFFFF;
-    border-radius: 25px;
-    h3 {
-        margin: 0;
-        padding: 0;
-        font-weight: bold;
-        font-size: 1.5rem;
-        line-height: 1.5rem;
-    }
-}
+<style lang="scss">
 
 </style>

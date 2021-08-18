@@ -66,51 +66,5 @@ export default {
 </script>
 
 <style lang="scss">
-/* Want nice animations? Check out https://github.com/asika32764/vue2-animate */
-/* @import 'https://unpkg.com/vue2-animate/dist/vue2-animate.min.css'; */
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,400;0,700;1,400&display=swap');
-#app {
-  // display:none;
-  font-family: 'Open Sans', sans-serif;
-  background: transparent;
-  &.racing-active{
-    display: block;
-    .racingStats {
-      display: block;
-    }
-  }
-  &.racing-app {
-    display: block;
-    .rapp {
-      display: block;
-    }
-  }
-
-  
-  table {
-      margin: 0;
-      padding: 0;
-      border: 0;
-      outline: 0;
-      font-size: 100%;
-      vertical-align: baseline;
-      background: transparent;
-      td {
-          padding:10px;
-      }
-  }
-  .grid {
-    display: flex;
-    justify-content: space-between;
-
-    &.center {
-      text-align: center;
-    }
-  }
-  .grid.third {
-    > div {
-      flex-basis: 33.33%;
-    }
-  }
-}
+@import "sass/globals"
 </style>
