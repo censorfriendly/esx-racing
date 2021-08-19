@@ -26,6 +26,10 @@ alertSignups = {}
 -- })
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 
+ESX.RegisterUsableItem('racetablet', function(source)
+    TriggerClientEvent('racing:openApp', source)
+end)
+
 RegisterServerEvent('racing:finishedStats')
 AddEventHandler('racing:finishedStats', function(stats)
     identifier = ESX.GetPlayerFromId(source).getIdentifier()
@@ -160,6 +164,7 @@ AddEventHandler('racing:start', function(raceId)
     end
     pendingRaces[raceId] = nil
     raceConfigs[raceId].started = true
+    triggerPoliceNotification(raceCopy.markers[1])
 end)
 
 RegisterServerEvent('racing:checkpoint')
@@ -227,14 +232,6 @@ AddEventHandler('racing:alertSignup', function(signUpFlag)
     end
 end)
 
-function alertPlayers(raceConf)
-    for x = 1, #alertSignups do
-        local xPlayer = ESX.GetPlayerFromIdentifier(alertSignups[x].identifier)
-        xPlayer.triggerEvent('esx:showNotification', 'Race Alert: ' .. raceConf.name .. ' No. Laps ' .. raceConf.laps)
-    end
-end
-
-
 RegisterServerEvent('racing:raceDetails')
 AddEventHandler('racing:raceDetails', function(raceId)
     
@@ -250,8 +247,6 @@ AddEventHandler('racing:getCrypto', function(signUpFlag)
     end)
 end)
 
-
-
 -- Thread to manage as races finish to translate into Archived format, and to auto DNF after designated time frame
 CreateThread(function()
 	while true do
@@ -260,37 +255,3 @@ CreateThread(function()
         checkDNFs()
 	end
 end)
-
-function checkDNFs()
-    for x,v in pairs(activeRaces) do 
-        if activeRaces[x] ~= nil then
-            for y = 1, #activeRaces[x] do 
-                if activeRaces[x][y].finished == false and not isempty(activeRaces[x][y].last_checkpoint_time) and tonumber(activeRaces[x][y].last_checkpoint_time) < GetGameTimer() - 300000  then 
-                    activeRaces[x][y].finished = true
-                    activeRaces[x][y].best_lap = "DNF"
-                    activeRaces[x][y].total_time = "DNF"
-                    local xPlayer = ESX.GetPlayerFromIdentifier(activeRaces[x][y].identifier)
-                    xPlayer.triggerEvent('racing:dnfIssued')
-                end
-            end
-        end
-    end
-end
-
-function checkFinished()
-    for x,v in pairs(activeRaces) do 
-        if activeRaces[x] ~= nil then
-            local raceended = true
-            for y = 1, #activeRaces[x] do 
-                if activeRaces[x][y].finished == false then 
-                    raceended = false
-                    break;
-                end
-            end
-            if raceended then 
-                archiveRace(x)
-            end
-        end
-    end
-    -- print('need to check finished status of race')
-end

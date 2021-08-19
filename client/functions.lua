@@ -1,4 +1,17 @@
 
+
+
+function openApp()
+    local playerPed = PlayerPedId()
+	cleanCheckpoint();
+	SetNuiFocus(true,true)
+	SetPedUsingActionMode(playerPed, -1, -1, 1)
+	SendNUIMessage({
+		raceApp = true
+	})
+end
+
+
 function startRace(race_Id)
 	raceId = race_Id
 	activeRace = Races[raceId]

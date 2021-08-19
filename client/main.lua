@@ -100,15 +100,17 @@ end)
 
 
 RegisterCommand("raceApp",function(source,args)
-    local playerPed = PlayerPedId()
-	cleanCheckpoint();
-	SetNuiFocus(true,true)
-	SetPedUsingActionMode(playerPed, -1, -1, 1)
-	SendNUIMessage({
-		raceApp = true
-	})
+	if RacingConfig.enableCommands then 
+		openApp()
+	else 
+		ESX.ShowNotification("You cant access that right now", true, false, '20')
+	end
 end)
 
+RegisterNetEvent("racing:openApp")
+AddEventHandler("racing:openApp", function()
+	openApp()
+end)
 
 RegisterNetEvent("racing:finishClient")
 AddEventHandler("racing:finishClient", function()
@@ -345,10 +347,3 @@ AddEventHandler("racing:archivedList", function(raceInfo, racerInfo)
 		racers = racerInfo
 	})
 end)
-
--- Racing Screen
-
--- RegisterNUICallback('setBestLap', function(params, cb)
--- 	TriggerServerEvent('racing:setBestLap',params.raceId, params.bestLap)
--- 	cb('ok');
--- end)

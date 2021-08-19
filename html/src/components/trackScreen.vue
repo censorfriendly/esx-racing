@@ -100,22 +100,4 @@ export default {
 </script>
 
 <style lang="scss">
-.form {
-  position: absolute;
-  width:80%;
-  left:10%;
-  top:0px;
-  overflow: hidden;
-  max-height: 0px;
-  transition: .25s ease-in;
-  background-color: white;
-  border-bottom-left-radius: 15px;
-  border-bottom-right-radius: 15px;
-  -webkit-box-shadow: 4px 6px 17px 1px rgba(0,0,0,0.44); 
-  box-shadow: 4px 6px 17px 1px rgba(0,0,0,0.44);
-  &.active {
-    max-height: 100%;
-  }
-}
-
 </style>

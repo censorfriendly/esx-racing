@@ -4,7 +4,7 @@ game 'gta5'
 
 description 'Racing script to build'
 
-version '0.0.4'
+version '0.1.0'
 
 client_scripts {
 	'config.lua',

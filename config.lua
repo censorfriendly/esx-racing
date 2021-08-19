@@ -7,7 +7,10 @@ RacingConfig = {
     crypto = true,  --Set false to disable crypto gains
     cryptoMin = 3, --Minimum number of racers per race to earn crypto
     cryptoPayout = 12, -- 12 to first, 6 second, 3 to third. everyone else receives 2. Math = /2 /4  (/4 -1)
-    cryptoName = 'MTC'
+    cryptoName = 'MTC',
+    notifyPD = true,
+    notifyChance = 20, -- put the percent as a whole number
+    enableCommands = false
 }
 
 Races = {}
