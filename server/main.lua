@@ -107,7 +107,7 @@ AddEventHandler('racing:quit', function()
 end)
 
 RegisterServerEvent('racing:join')
-AddEventHandler('racing:join', function(raceId,setOwner,laps)
+AddEventHandler('racing:join', function(raceId,setOwner,configuration)
     local xPlayer = ESX.GetPlayerFromId(source)
     local usource = source
     identifier = xPlayer.getIdentifier()
@@ -118,10 +118,12 @@ AddEventHandler('racing:join', function(raceId,setOwner,laps)
             id = raceId,
             name = Races[raceId].Config.Name,
             type = Races[raceId].Config.Type,
-            laps = tonumber(laps),
+            laps = tonumber(configuration.laps),
+            title = configuration.title,
             started = false,
             owner = identifier,
         }
+        print(dump(rconf))
         raceConfigs[raceId] = rconf
 
         pendingRaces[raceId] = {}
@@ -138,7 +140,7 @@ AddEventHandler('racing:join', function(raceId,setOwner,laps)
         }
         table.insert(pendingRaces[raceId], inObj)
     end
-    TriggerClientEvent('racing:raceInfo', usource,pendingRaces[raceId])
+    xPlayer.triggerEvent('racing:raceInfo',pendingRaces[raceId])
 end)
 
 RegisterServerEvent('racing:start')

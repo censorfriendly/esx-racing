@@ -10,7 +10,7 @@ RacingConfig = {
     cryptoName = 'MTC',
     notifyPD = true,
     notifyChance = 20, -- put the percent as a whole number
-    enableCommands = false
+    enableCommands = true
 }
 
 Races = {}

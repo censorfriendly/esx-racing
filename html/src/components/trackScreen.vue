@@ -12,8 +12,10 @@
             <div class="col-md-3 ut-vertAlignCenter"><button class="btn" @click="viewRace(index)">View Race</button></div>
           </div>
       </div>
-      <div class="form col-md-12" :class="{active:formActive}">
+      <div class="formSlideDown col-md-12" :class="{active:formActive}">
         <div class="p-2">
+            <strong v-if="circuit" class="col-md-6">Race Title</strong>
+            <input type="text" v-if="circuit" class="col-md-offset-3" v-model="config.title"><br>
             <strong v-if="circuit" class="col-md-6">No. of Laps</strong>
             <input v-if="circuit" class="col-md-offset-3 numberInput" v-model="config.laps">
             <strong v-else class="col-md-12">This is a Sprint Race</strong>
@@ -45,7 +47,8 @@ export default {
       circuit : false,
       config: {
         laps: 1,
-        alert: false
+        alert: false,
+        title: ""
       }
     };
   },
@@ -67,7 +70,8 @@ export default {
         if(!this.$store.state.raceApp.joinedRace) {
           Nui.send('createRace',{
             raceId: this.selectedRace + 1,
-            laps: this.config.laps
+            laps: this.config.laps,
+            title: this.config.title
           })
           this.formActive = 0;
           this.$store.state.raceApp.joinedRace = true;

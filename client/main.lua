@@ -124,6 +124,7 @@ end)
 
 RegisterNetEvent("racing:raceInfo")
 AddEventHandler("racing:raceInfo", function(raceInfo)
+	print(dump(raceInfo))
 	SendNUIMessage({
 		raceInfo = true,
 		info = raceInfo
@@ -225,9 +226,9 @@ RegisterNUICallback('initApp', function(data,cb)
 end)
 
 RegisterNUICallback('createRace', function(params,cb)
-	raceId = params.raceId
+	-- raceId = params.raceId
 	activeRace = Races[raceId]
-	TriggerServerEvent('racing:join',raceId, true, params.laps)
+	TriggerServerEvent('racing:join',raceId, true, params)
 	cb('ok');
 
 end)

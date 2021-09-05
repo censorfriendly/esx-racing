@@ -3,28 +3,33 @@
     <div v-if="!joinedRace && !isOwner">
       <div v-for="(track,index) in pendingObject" :key="index">
           <div class="center row" :class="{evenRow: index % 2 == 0}">
-            <div class="col-md-6 ut-vertAlignCenter"><h4 v-html="track.name + ' Laps:'+ track.laps"/></div>
-            <div class="col-md-3 ut-vertAlignCenter"><button @click="joinRace(track.id)" class="">Join Race</button></div>
-            <div class="col-md-3 ut-vertAlignCenter"><button @click="mapRace(track.id)" class="">Map To Race</button></div>
+            <div class="col-md-12 ut-vertAlignCenter"><h4 v-html="track.title"/></div>
+            <div class="col-md-4 ut-vertAlignCenter"><h4 v-html="track.name + ' Laps:'+ track.laps"/></div>
+            <div class="col-md-4 ut-vertAlignCenter"><button @click="joinRace(track.id)" class="">Join Race</button></div>
+            <div class="col-md-4 ut-vertAlignCenter"><button @click="mapRace(track.id)" class="">Map To Race</button></div>
           </div>
       </div>
     </div>
-    <div v-else >
+    <div v-else-if="getParticipatingRace" >
       <div>
         <button @click="getPlayersInRace">Refresh Racers List</button>
-        <h3>Active Race: <span v-html="trackObject[raceId - 1].Config.Name"/></h3>
+        <h3>Active Race:  <span v-html="getParticipatingRace.title"/></h3>
+        <h3>Track: <span v-html="getParticipatingRace.name"/> Laps: <span v-html="getParticipatingRace.laps"/></h3>
         <div class="row mb-2">
-          <div class="col-md-4 ut-vertAlignCenter" v-if="isOwner">
+          <div class="col-md-3 ut-vertAlignCenter" v-if="isOwner">
             <button @click="startRace(raceId)" class="">Start Race</button>
           </div>
-          <div class="col-md-4 ut-vertAlignCenter">
+          <div class="col-md-3 ut-vertAlignCenter">
             <button @click="mapRace(raceId)" class="">Map To Race</button>
           </div>
-          <div class="col-md-4 ut-vertAlignCenter" v-if="isOwner">
+          <div class="col-md-3 ut-vertAlignCenter" v-if="isOwner">
             <button @click="quitRace()" class="">Cancel Race</button>
           </div>
-          <div class="col-md-4 ut-vertAlignCenter" v-else>
+          <div class="col-md-3 ut-vertAlignCenter" v-else>
             <button @click="quitRace()" class="">Quit Race</button>
+          </div>
+          <div class="col-md-3 ut-vertAlignCenter" v-if="isOwner">
+            <button @click="messageRacers(raceId)" class="">Message Racers</button>
           </div>
         </div>
         <div v-for="(racer,index) in racersList" :key="index">
@@ -32,6 +37,21 @@
             <div class="col-md-12"><h4 v-html="racer.player_name"/></div>
           </div>
         </div>
+      </div>
+    </div>
+    <div class="formSlideDown col-md-12" :class="{active:formActive}">
+      <div class="p-2">
+          <strong class="col-md-6">Message</strong>
+          <input width="300px" height="90px" type="text" class="col-md-offset-1 col-md-5" v-model="message" />
+          <input type="hidden" :value="raceId"/>
+          <div class="row ut-vertAlignCenter mt center">
+            <div class="col-md-6">
+              <button class="btn">Send Message</button>
+            </div>
+            <div class="col-md-6">
+              <button class="btn">Cancel Message</button>
+            </div>
+          </div>
       </div>
     </div>
   </div>
@@ -47,7 +67,9 @@ export default {
   data() {
     return {
       participatingRace: {},
-      racerList: []
+      racerList: [],
+      message:"",
+      formActive: false
     };
   },
   methods: {
@@ -56,6 +78,11 @@ export default {
     },
     startRace: function(raceId) {
         Nui.send('startRace',{raceId})
+    },
+    messageRacers: function() {
+        // Nui.send('startRace',{raceId})
+        this.formActive = true;
+        console.log("show form");
     },
     joinRace: function(raceId) {
         Nui.send('joinRace',{raceId})
@@ -83,7 +110,7 @@ export default {
           }
         }
       }
-    }
+    },
   },
   mounted() {
     this.listener = window.addEventListener(
@@ -126,6 +153,12 @@ export default {
     },
     racersList: function() {
       return this.racerList;
+    },
+    getParticipatingRace: function() {
+      if(this.$store.state.pendingList) {
+        return this.$store.state.pendingList.filter((r) => {if(r.id === this.raceId) {return r}})[0];
+      }
+      return {}
     }
   }
 };
