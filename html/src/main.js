@@ -3,9 +3,17 @@ import App from './App.vue';
 import Nui from './utils/Nui';
 import store from './utils/store'
 import VueDragscroll from 'vue-dragscroll'
+import VueSanitize from "vue-sanitize";
 
 Vue.config.productionTip = false;
 Vue.use(VueDragscroll)
+
+var defaultOptions = {
+  allowedTags: [],
+  allowedAttributes: {
+  }
+};
+Vue.use(VueSanitize, defaultOptions);
 
 new Vue({
   store,

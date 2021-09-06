@@ -13,7 +13,7 @@
     <div v-else-if="getParticipatingRace" >
       <div>
         <button @click="getPlayersInRace">Refresh Racers List</button>
-        <h3>Active Race:  <span v-html="getParticipatingRace.title"/></h3>
+        <h3 v-html="getParticipatingRace.title"/>
         <h3>Track: <span v-html="getParticipatingRace.name"/> Laps: <span v-html="getParticipatingRace.laps"/></h3>
         <div class="row mb-2">
           <div class="col-md-3 ut-vertAlignCenter" v-if="isOwner">
@@ -29,7 +29,7 @@
             <button @click="quitRace()" class="">Quit Race</button>
           </div>
           <div class="col-md-3 ut-vertAlignCenter" v-if="isOwner">
-            <button @click="messageRacers(raceId)" class="">Message Racers</button>
+            <button @click="formActive = true" class="">Message Racers</button>
           </div>
         </div>
         <div v-for="(racer,index) in racersList" :key="index">
@@ -41,15 +41,15 @@
     </div>
     <div class="formSlideDown col-md-12" :class="{active:formActive}">
       <div class="p-2">
-          <strong class="col-md-6">Message</strong>
+          <strong class="col-md-6">Message*</strong>
           <input width="300px" height="90px" type="text" class="col-md-offset-1 col-md-5" v-model="message" />
           <input type="hidden" :value="raceId"/>
           <div class="row ut-vertAlignCenter mt center">
             <div class="col-md-6">
-              <button class="btn">Send Message</button>
+              <button @click="sendMessage" class="btn">Send Message</button>
             </div>
             <div class="col-md-6">
-              <button class="btn">Cancel Message</button>
+              <button @click="formActive = false" class="btn">Cancel Message</button>
             </div>
           </div>
       </div>
@@ -59,6 +59,7 @@
 
 <script>
 import Nui from '../utils/Nui';
+
 export default {
   name: 'pending-screen',
   props: {
@@ -79,10 +80,15 @@ export default {
     startRace: function(raceId) {
         Nui.send('startRace',{raceId})
     },
-    messageRacers: function() {
-        // Nui.send('startRace',{raceId})
-        this.formActive = true;
-        console.log("show form");
+    sendMessage: function() {
+      if(this.message !== "") {
+            Nui.send('sendMessage',{
+              raceId: this.raceId,
+              message: this.$sanitize(this.message)
+            })
+        this.message = "";
+        this.formActive = false;
+      }
     },
     joinRace: function(raceId) {
         Nui.send('joinRace',{raceId})

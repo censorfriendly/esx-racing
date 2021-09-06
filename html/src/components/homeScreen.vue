@@ -73,7 +73,6 @@ export default {
       event => {
         const item = event.data || event.detail;
         if (item.raceData) {
-          console.log( item)
           this.$store.state.home.finishedRaces = item.raceInfo;
           this.$store.state.home.finishedRacesRacers = item.racers;
         }

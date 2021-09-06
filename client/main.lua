@@ -124,7 +124,6 @@ end)
 
 RegisterNetEvent("racing:raceInfo")
 AddEventHandler("racing:raceInfo", function(raceInfo)
-	print(dump(raceInfo))
 	SendNUIMessage({
 		raceInfo = true,
 		info = raceInfo
@@ -166,6 +165,7 @@ RegisterNUICallback('closeApp', function(params,cb)
 	cb('ok');
 end)
 RegisterNUICallback('quitRace', function(params,cb)
+	resetFlags()
 	TriggerServerEvent('racing:quit')
 	cb('ok');
 end)
@@ -319,6 +319,12 @@ end)
 
 RegisterNUICallback('getArchivedList', function(params, cb)
 	TriggerServerEvent('racing:finishedRacesList')
+	cb('ok');
+end)
+
+
+RegisterNUICallback('sendMessage', function(params,cb)
+	TriggerServerEvent('racing:sendMessageToRacers',params)
 	cb('ok');
 end)
 

@@ -75,6 +75,9 @@ end
 
 function resetFlags()
 	ClearGpsMultiRoute()
+	if(startPoint) then 
+		RemoveBlip(startPoint)
+	end
 	checkPos = 1
 	checkpoint = {}
 	raceStarted = false

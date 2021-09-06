@@ -123,7 +123,7 @@ AddEventHandler('racing:join', function(raceId,setOwner,configuration)
             started = false,
             owner = identifier,
         }
-        print(dump(rconf))
+        
         raceConfigs[raceId] = rconf
 
         pendingRaces[raceId] = {}
@@ -247,6 +247,16 @@ AddEventHandler('racing:getCrypto', function(signUpFlag)
     MySQL.Async.fetchAll('Select * from users WHERE identifier = @identifier', {['@identifier'] = identifier}, function(result)
         TriggerClientEvent('racing:setCrypto', usource, result[1].racecrypto)
     end)
+end)
+
+RegisterServerEvent('racing:sendMessageToRacers')
+AddEventHandler('racing:sendMessageToRacers', function(params)
+    local rid = params.raceId
+    local message = params.message
+    for i = 1, #pendingRaces[rid] do 
+        local xPlayer = ESX.GetPlayerFromIdentifier(pendingRaces[rid][i].identifier)
+        xPlayer.triggerEvent('esx:showNotification', 'Race Message: ' .. message)
+    end
 end)
 
 -- Thread to manage as races finish to translate into Archived format, and to auto DNF after designated time frame
