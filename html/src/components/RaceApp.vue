@@ -87,6 +87,7 @@ export default {
         if (item.racingListEvent) {
             this.$store.state.raceApp.loading = false;
             this.$store.state.pendingList = item.list;
+            this.index = 1;
         }
         if (item.error) {
             this.$store.state.raceApp.error = item.message;

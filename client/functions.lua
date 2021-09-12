@@ -2,13 +2,19 @@
 
 
 function openApp()
-    local playerPed = PlayerPedId()
-	cleanCheckpoint();
-	SetNuiFocus(true,true)
-	SetPedUsingActionMode(playerPed, -1, -1, 1)
-	SendNUIMessage({
-		raceApp = true
-	})
+	
+	local plyData = ESX.GetPlayerData()
+	-- if plyData and plyData.job and plyData.job.name ~= "police" then
+		local playerPed = PlayerPedId()
+		cleanCheckpoint();
+		SetNuiFocus(true,true)
+		SetPedUsingActionMode(playerPed, -1, -1, 1)
+		SendNUIMessage({
+			raceApp = true
+		})
+	-- else
+		-- ESX.ShowNotification("You cant access that right now", true, false, '20')
+	-- end
 end
 
 
@@ -99,6 +105,20 @@ end
 function lapEvent()
 	SendNUIMessage({
 		lapEvent = true
+	})
+end
+
+function buildCleanRaces() 
+	
+	local cleanRaces = {}
+	for i = 1, #Races do 
+		cleanRaces[i] = {}
+		cleanRaces[i].Config = Races[i].Config
+	end
+
+	SendNUIMessage({
+		trackListEvent = true,
+		tracks = cleanRaces
 	})
 end
 

@@ -202,6 +202,7 @@ export default {
                 this.stop();
             }
             if(item.positionUpdate) {
+                console.log(item.position);
                 this.pos = item.position;
             }
             if(item.setRaceConfig) {

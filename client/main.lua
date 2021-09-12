@@ -11,6 +11,7 @@ finished = false
 lastLap = nil
 raceConfig = nil
 gpsArray = {}
+lastPosition = nil
 
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 CreateThread(function()
@@ -20,7 +21,7 @@ CreateThread(function()
 		if raceStarted then
 			local coords = activeRace.Markers[checkPos]
 			local type = 2;
-			if(checkPos == 1 and finishLine) then 
+			if(checkPos == 1 and finishLine) or (checkPos == #activeRace.Markers and finishLine and activeRace.Config.Type == 'Sprint') then 
 				type = 4;
 			elseif(checkPos == 1 and raceLap == 1) then 
 				type = 4
@@ -37,8 +38,19 @@ CreateThread(function()
 			local player = GetPlayerPed(-1)
 			local coords = activeRace.Markers[checkPos]
 			local position = GetEntityCoords(player)
-			if GetDistanceBetweenCoords(position.x, position.y, position.z, coords.x, coords.y, coords.z, 0 , false) < 25.0 then
+			local passedLine = false
+			local currentPosition = GetDistanceBetweenCoords(position.x, position.y, position.z, coords.x, coords.y, coords.z, 0 , false)
+			local firstCheck = currentPosition < 25.0
 
+			if firstCheck and lastPosition ~= nil then 
+				if currentPosition > lastPosition then 
+					passedLine = true
+				end	
+			end
+
+			-- local closeCheck = GetDistanceBetweenCoords(position.x, position.y, position.z, coords.x, coords.y, coords.z, 0 , false) < 10.0
+			if firstCheck and passedLine  then
+				
 				ClearGpsMultiRoute()
 
 				-- Start a new route
@@ -94,6 +106,8 @@ CreateThread(function()
 				table.remove(gpsArray,1)
 				SetGpsMultiRouteRender(true)
 			end
+			
+			lastPosition = currentPosition
 		end
 	end
 end)
@@ -143,7 +157,7 @@ AddEventHandler("racing:updatePos", function(positionTable)
 	
     local pos = 0
     for i = 1, #positionTable do
-        if positionTable[i].identifier == data.identifier then 
+        if positionTable[i].steamidentifier == data.identifier then 
             pos = i
             break;
         end
@@ -208,7 +222,6 @@ end)
 
 RegisterNUICallback('initApp', function(data,cb)
 	local data = ESX.GetPlayerData()
-	
 	SendNUIMessage({
 		initApp = true,
 		identifier = data.identifier,
@@ -216,17 +229,14 @@ RegisterNUICallback('initApp', function(data,cb)
 		cryptoEnabled = RacingConfig.crypto
 	})
 
-	SendNUIMessage({
-		trackListEvent = true,
-		tracks = Races
-	})
+	buildCleanRaces()
 	
 	TriggerServerEvent('racing:pendingList')
 	cb('ok');
 end)
 
 RegisterNUICallback('createRace', function(params,cb)
-	-- raceId = params.raceId
+	raceId = params.raceId
 	activeRace = Races[raceId]
 	TriggerServerEvent('racing:join',raceId, true, params)
 	cb('ok');
@@ -312,7 +322,9 @@ RegisterNUICallback('joinRace', function(params, cb)
 end)
 
 RegisterNUICallback('startRace', function(params, cb)
-	TriggerServerEvent('racing:start',params.raceId)
+	
+	local p = exports['nearest-postal']:getPostal()
+	TriggerServerEvent('racing:start',params.raceId,p)
 	cb('ok');
 end)
 

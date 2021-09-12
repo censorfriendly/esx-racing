@@ -9,8 +9,14 @@ RacingConfig = {
     cryptoPayout = 12, -- 12 to first, 6 second, 3 to third. everyone else receives 2. Math = /2 /4  (/4 -1)
     cryptoName = 'MTC',
     notifyPD = true,
-    notifyChance = 20, -- put the percent as a whole number
+    notifyChance = 100, -- put the percent as a whole number
     enableCommands = true
+}
+CadConfig = {
+    serverId = 1,
+    communityId = 1,
+    apiKey = 1,
+    type='NEW_DISPATCH'
 }
 
 Races = {}

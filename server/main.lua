@@ -32,7 +32,7 @@ end)
 
 RegisterServerEvent('racing:finishedStats')
 AddEventHandler('racing:finishedStats', function(stats)
-    identifier = ESX.GetPlayerFromId(source).getIdentifier()
+    identifier = source
     local raceId = stats.raceId
     for y = 1, #activeRaces[raceId] do
         if activeRaces[raceId][y].identifier == identifier then 
@@ -49,7 +49,7 @@ end)
 RegisterServerEvent('racing:quit')
 AddEventHandler('racing:quit', function()
     xPlayer = ESX.GetPlayerFromId(source)
-    identifier = xPlayer.getIdentifier()
+    identifier = source
     local ident = identifier
     local quitRace = false
     -- Check pending race
@@ -68,9 +68,9 @@ AddEventHandler('racing:quit', function()
             if raceConfigs[x].owner == ident then 
                 raceConfigs[x] = nil
                 for y = 1, #pendingRaces[x] do
-                    local xPlayer = ESX.GetPlayerFromIdentifier(pendingRaces[x][y].identifier)
-                    xPlayer.triggerEvent('racing:quitRace')
-                    xPlayer.triggerEvent('esx:showNotification', 'Race Cancelled')
+                    local xPlayer = ESX.GetPlayerFromId(pendingRaces[x][y].identifier)
+                    TriggerClientEvent('racing:quitRace',pendingRaces[x][y].identifier)
+                    TriggerClientEvent('esx:showNotification',pendingRaces[x][y].identifier, 'Race Cancelled')
                 end
                 pendingRaces[x] = nil
                 quitRace = true
@@ -110,8 +110,17 @@ RegisterServerEvent('racing:join')
 AddEventHandler('racing:join', function(raceId,setOwner,configuration)
     local xPlayer = ESX.GetPlayerFromId(source)
     local usource = source
-    identifier = xPlayer.getIdentifier()
+    sId = source
+    steamidentifier = xPlayer.getIdentifier()
+    local XplayerName = MySQL.Sync.fetchAll('SELECT firstname, lastname FROM users WHERE identifier = @identifier',  {
+        ['@identifier'] = steamidentifier
+    })
     -- local raceAlreadySet = checkIfInTable(pendingRaces,'race', raceId)
+    local inObj = {
+        identifier = sId,
+        steamidentifier = steamidentifier,
+        player_name = XplayerName[1]['firstname'] .. ' ' .. XplayerName[1]['lastname']
+    }
     if setOwner and pendingRaces[raceId] == nil then
         -- Create a new entry for the race (only 1 of each race can be created)
         rconf = {
@@ -121,36 +130,26 @@ AddEventHandler('racing:join', function(raceId,setOwner,configuration)
             laps = tonumber(configuration.laps),
             title = configuration.title,
             started = false,
-            owner = identifier,
+            owner = sId,
         }
         
         raceConfigs[raceId] = rconf
-
         pendingRaces[raceId] = {}
-        local inObj = {
-            identifier = identifier,
-            player_name = xPlayer.getName(),
-        }
-        table.insert(pendingRaces[raceId], inObj)
         alertPlayers(rconf)
-    else
-        local inObj = {
-            identifier = identifier,
-            player_name = xPlayer.getName()
-        }
-        table.insert(pendingRaces[raceId], inObj)
     end
-    xPlayer.triggerEvent('racing:raceInfo',pendingRaces[raceId])
+    table.insert(pendingRaces[raceId], inObj)
+    TriggerClientEvent('racing:raceInfo',usource, pendingRaces[raceId])
 end)
 
 RegisterServerEvent('racing:start')
-AddEventHandler('racing:start', function(raceId)
+AddEventHandler('racing:start', function(raceId,postal)
     local raceCopy = pendingRaces[raceId]
     activeRaces[raceId] = {}
     for i = 1, #raceCopy do 
         local inObj = {
             last_checkpoint_time = '',
             identifier = raceCopy[i].identifier,
+            steamidentifier = raceCopy[i].steamidentifier,
             player_name = raceCopy[i].player_name,
             lap = 1,
             checkpoint = 1,
@@ -160,19 +159,17 @@ AddEventHandler('racing:start', function(raceId)
             finished = false,
         }
         table.insert(activeRaces[raceId], inObj)
-        local xPlayer = ESX.GetPlayerFromIdentifier(raceCopy[i].identifier)
         raceConfigs[raceId].racerCount = #raceCopy
-        xPlayer.triggerEvent('racing:startClient',raceConfigs[raceId])
+        TriggerClientEvent('racing:startClient',raceCopy[i].identifier, raceConfigs[raceId])
     end
     pendingRaces[raceId] = nil
     raceConfigs[raceId].started = true
-    triggerPoliceNotification(raceCopy.markers[1])
+    triggerPoliceNotification(postal)
 end)
 
 RegisterServerEvent('racing:checkpoint')
 AddEventHandler('racing:checkpoint', function(race_id, checkpoint, lap)
-    local xPlayer = ESX.GetPlayerFromId(source)
-    _identifier = xPlayer.getIdentifier()
+    _identifier = source
     for i = 1, #activeRaces[race_id] do
         if activeRaces[race_id][i].identifier == _identifier then 
             activeRaces[race_id][i].checkpoint = tonumber(activeRaces[race_id][i].checkpoint) + 1;
@@ -180,12 +177,12 @@ AddEventHandler('racing:checkpoint', function(race_id, checkpoint, lap)
             break;
         end
     end
-    xPlayer.triggerEvent('racing:updatePos',activeRaces[race_id])
+    TriggerClientEvent('racing:updatePos',source,activeRaces[race_id])
 end)
 
 RegisterServerEvent('racing:pendingList')
 AddEventHandler('racing:pendingList', function()
-    identifier = ESX.GetPlayerFromId(source).getIdentifier()
+    identifier = source
     local usource = source
     local unstartedRaces = {}
     for k, v in pairs(raceConfigs) do 
@@ -214,7 +211,7 @@ end)
 
 RegisterServerEvent('racing:alertSignup')
 AddEventHandler('racing:alertSignup', function(signUpFlag)
-    identifier = ESX.GetPlayerFromId(source).getIdentifier()
+    identifier = source
     local usource = source
     local alreadySignedUp = false;
     local pindex = 0
@@ -242,11 +239,11 @@ end)
 
 RegisterServerEvent('racing:getCrypto')
 AddEventHandler('racing:getCrypto', function(signUpFlag)
-    identifier = ESX.GetPlayerFromId(source).getIdentifier()
-    local usource = source
-    MySQL.Async.fetchAll('Select * from users WHERE identifier = @identifier', {['@identifier'] = identifier}, function(result)
-        TriggerClientEvent('racing:setCrypto', usource, result[1].racecrypto)
-    end)
+    -- identifier = source
+    -- local usource = source
+    -- MySQL.Async.fetchAll('Select * from users WHERE identifier = @identifier', {['@identifier'] = identifier}, function(result)
+    --     TriggerClientEvent('racing:setCrypto', usource, result[1].racecrypto)
+    -- end)
 end)
 
 RegisterServerEvent('racing:sendMessageToRacers')
@@ -254,8 +251,7 @@ AddEventHandler('racing:sendMessageToRacers', function(params)
     local rid = params.raceId
     local message = params.message
     for i = 1, #pendingRaces[rid] do 
-        local xPlayer = ESX.GetPlayerFromIdentifier(pendingRaces[rid][i].identifier)
-        xPlayer.triggerEvent('esx:showNotification', 'Race Message: ' .. message)
+        TriggerClientEvent('esx:showNotification',pendingRaces[rid][i].identifier, 'Race Message: ' .. message)
     end
 end)
 

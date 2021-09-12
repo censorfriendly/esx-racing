@@ -5,7 +5,7 @@
       <div v-for="index in archiveObject.length" :key="index" class="togglable">
         <div class="row" @click="toggleView(index)">
           <h4 v-html="archiveObject[archiveObject.length - index].name" class="col-md-6" />
-          <h4 v-html="archiveObject[archiveObject.length - index].laps" class="col-md-6" />
+          <h4 v-html="archiveObject[archiveObject.length - index].title" class="col-md-6" />
         </div>
         <div class="expand-height" :class="{active:viewingRace == index}">
           <div class="row">

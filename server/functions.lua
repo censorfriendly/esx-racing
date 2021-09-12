@@ -5,18 +5,20 @@ TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 
 function archiveRace(race_id)
     for y = 1, #activeRaces[race_id] do
-        local identifier = activeRaces[race_id][y].identifier
+        local xPlayer = ESX.GetPlayerFromId(activeRaces[race_id][y].identifier)
+        local identifier = xPlayer.identifier
         local bestLap = activeRaces[race_id][y].best_lap
         local playerName = activeRaces[race_id][y].player_name 
-        MySQL.Async.fetchAll('Select * from racing_tracktimes WHERE identifier = @identifier AND track_id = @track_id', {['@identifier'] = identifier, ['@track_id'] = race_id}, function(lookups)
+        MySQL.Async.fetchAll('Select * from racing_tracktimes WHERE identifier = @identifier AND track_id = @track_id AND player_name = @playerName' , {['@identifier'] = identifier, ['@track_id'] = race_id, ['@playerName'] = playerName}, function(lookups)
             if #lookups > 0 then
                 -- Update if the laptime is better
                 if isempty(lookups[1].best_lap) or lookups[1].best_lap == 'DNF' or (bestLap ~= 'DNF' and TimeStamp(bestLap) < TimeStamp(lookups[1].best_lap)) then
-                    MySQL.Async.execute('UPDATE racing_tracktimes SET `best_lap` = @best_lap WHERE identifier = @identifier AND track_id = @track_id',
+                    MySQL.Async.execute('UPDATE racing_tracktimes SET `best_lap` = @best_lap WHERE identifier = @identifier AND track_id = @track_id AND player_name = @playerName',
                     {
                         ['@best_lap'] = bestLap,
                         ['@identifier'] = identifier,
-                        ['@track_id'] = race_id
+                        ['@track_id'] = race_id,
+                        ['@playerName'] = playerName
                     })
                 end
             else    
@@ -82,18 +84,42 @@ end
 
 function alertPlayers(raceConf)
     for x = 1, #alertSignups do
-        local xPlayer = ESX.GetPlayerFromIdentifier(alertSignups[x].identifier)
-        xPlayer.triggerEvent('esx:showNotification', 'Race Alert: ' .. raceConf.name .. ' No. Laps ' .. raceConf.laps)
+        local xPlayer = ESX.GetPlayerFromId(alertSignups[x].identifier)
+        TriggerClientEvent('esx:showNotification',alertSignups[x].identifier, 'Race Alert: ' .. raceConf.name .. ' No. Laps ' .. raceConf.laps)
     end
 end
 
-function triggerPoliceNotification(location)
+function triggerPoliceNotification(postal)
     if RacingConfig.notifyPD then
         local percent = RacingConfig.notifyChance
         local chance = math.fmod(GetGameTimer(),100)
-        if chance <= percent then 
-            print("add call to mdt alert system")
-			print(location)
+        if chance <= percent then
+            exports["fiya-script"]:triggerCADAlertSystem('race',postal,'Street Race') 
+            -- local data = 
+			-- {
+            --     ['serverId'] = 1, 
+            --     ['origin'] = 0, 
+            --     ['status'] = 1, 
+            --     ['priority'] = 1, 
+            --     ['block'] = "", -- not used, but required
+            --     ['postal'] = postal, --TODO
+            --     ['address'] = 'Unknown', 
+            --     ['title'] = 'Street Race', 
+            --     ['code'] = '10-70 Street Race',  
+            --     ['description'] = 'Street racers were spotted lining up', 
+            --     ['units'] = {},
+            --     ['notes'] = {} -- required
+            -- }
+			-- exports["sonorancad"]:performApiRequest({data},"NEW_DISPATCH",function(resp)
+			-- 	local callObject = {
+			-- 		['caller'] = "Anon",
+			-- 		['emergency'] = true,
+			-- 		['location'] = postal,
+			-- 		['description'] = 'Street racers were spotted lining up', 
+			-- 		['callId'] = tonumber(resp:match("%d+"))
+			-- 	}
+			-- 	TriggerEvent("SonoranCAD::pushevents:IncomingCadCall",callObject)
+			-- end)
         end
     end
 end
@@ -191,8 +217,8 @@ function checkDNFs()
                     activeRaces[x][y].finished = true
                     activeRaces[x][y].best_lap = "DNF"
                     activeRaces[x][y].total_time = "DNF"
-                    local xPlayer = ESX.GetPlayerFromIdentifier(activeRaces[x][y].identifier)
-                    xPlayer.triggerEvent('racing:dnfIssued')
+                    local xPlayer = ESX.GetPlayerFromId(activeRaces[x][y].identifier)
+                    TriggerClientEvent('racing:dnfIssued',activeRaces[x][y].identifier)
                 end
             end
         end

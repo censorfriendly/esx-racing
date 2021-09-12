@@ -14,8 +14,8 @@
       </div>
       <div class="formSlideDown col-md-12" :class="{active:formActive}">
         <div class="p-2">
-            <strong v-if="circuit" class="col-md-6">Race Title*</strong>
-            <input type="text" v-if="circuit" class="col-md-offset-3" v-model="config.title"><br>
+            <strong class="col-md-6">Race Title*</strong>
+            <input type="text" class="col-md-offset-3" v-model="config.title"><br>
             <strong v-if="circuit" class="col-md-6">No. of Laps</strong>
             <input v-if="circuit" class="col-md-offset-3 numberInput" v-model="config.laps">
             <strong v-else class="col-md-12">This is a Sprint Race</strong>
@@ -78,7 +78,6 @@ export default {
             this.$store.state.raceApp.joinedRace = true;
             this.$store.state.raceApp.isOwner = true;
             this.$store.state.raceApp.race_id = this.selectedRace + 1;
-            this.$parent.triggerTab(1);
           }
         }
         else {
