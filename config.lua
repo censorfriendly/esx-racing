@@ -12,11 +12,5 @@ RacingConfig = {
     notifyChance = 100, -- put the percent as a whole number
     enableCommands = true
 }
-CadConfig = {
-    serverId = 1,
-    communityId = 1,
-    apiKey = 1,
-    type='NEW_DISPATCH'
-}
 
 Races = {}

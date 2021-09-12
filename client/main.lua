@@ -324,7 +324,8 @@ end)
 RegisterNUICallback('startRace', function(params, cb)
 	
 	local p = exports['nearest-postal']:getPostal()
-	TriggerServerEvent('racing:start',params.raceId,p)
+	local street = GetStreetAndZone()
+	TriggerServerEvent('racing:start',params.raceId,p,street)
 	cb('ok');
 end)
 

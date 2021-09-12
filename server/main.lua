@@ -142,7 +142,7 @@ AddEventHandler('racing:join', function(raceId,setOwner,configuration)
 end)
 
 RegisterServerEvent('racing:start')
-AddEventHandler('racing:start', function(raceId,postal)
+AddEventHandler('racing:start', function(raceId,postal,street)
     local raceCopy = pendingRaces[raceId]
     activeRaces[raceId] = {}
     for i = 1, #raceCopy do 
@@ -164,7 +164,7 @@ AddEventHandler('racing:start', function(raceId,postal)
     end
     pendingRaces[raceId] = nil
     raceConfigs[raceId].started = true
-    triggerPoliceNotification(postal)
+    triggerPoliceNotification(postal,street)
 end)
 
 RegisterServerEvent('racing:checkpoint')

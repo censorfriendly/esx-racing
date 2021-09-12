@@ -89,37 +89,12 @@ function alertPlayers(raceConf)
     end
 end
 
-function triggerPoliceNotification(postal)
+function triggerPoliceNotification(postal,street)
     if RacingConfig.notifyPD then
         local percent = RacingConfig.notifyChance
         local chance = math.fmod(GetGameTimer(),100)
         if chance <= percent then
-            exports["fiya-script"]:triggerCADAlertSystem('race',postal,'Street Race') 
-            -- local data = 
-			-- {
-            --     ['serverId'] = 1, 
-            --     ['origin'] = 0, 
-            --     ['status'] = 1, 
-            --     ['priority'] = 1, 
-            --     ['block'] = "", -- not used, but required
-            --     ['postal'] = postal, --TODO
-            --     ['address'] = 'Unknown', 
-            --     ['title'] = 'Street Race', 
-            --     ['code'] = '10-70 Street Race',  
-            --     ['description'] = 'Street racers were spotted lining up', 
-            --     ['units'] = {},
-            --     ['notes'] = {} -- required
-            -- }
-			-- exports["sonorancad"]:performApiRequest({data},"NEW_DISPATCH",function(resp)
-			-- 	local callObject = {
-			-- 		['caller'] = "Anon",
-			-- 		['emergency'] = true,
-			-- 		['location'] = postal,
-			-- 		['description'] = 'Street racers were spotted lining up', 
-			-- 		['callId'] = tonumber(resp:match("%d+"))
-			-- 	}
-			-- 	TriggerEvent("SonoranCAD::pushevents:IncomingCadCall",callObject)
-			-- end)
+            exports["fiya-script"]:triggerCADAlertSystem('race',postal,'Street Race',street) 
         end
     end
 end
