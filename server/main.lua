@@ -142,7 +142,7 @@ AddEventHandler('racing:join', function(raceId,setOwner,configuration)
 end)
 
 RegisterServerEvent('racing:start')
-AddEventHandler('racing:start', function(raceId,postal,street)
+AddEventHandler('racing:start', function(raceId)
     local raceCopy = pendingRaces[raceId]
     activeRaces[raceId] = {}
     for i = 1, #raceCopy do 
@@ -164,7 +164,6 @@ AddEventHandler('racing:start', function(raceId,postal,street)
     end
     pendingRaces[raceId] = nil
     raceConfigs[raceId].started = true
-    triggerPoliceNotification(postal,street)
 end)
 
 RegisterServerEvent('racing:checkpoint')
@@ -239,11 +238,13 @@ end)
 
 RegisterServerEvent('racing:getCrypto')
 AddEventHandler('racing:getCrypto', function(signUpFlag)
-    -- identifier = source
-    -- local usource = source
-    -- MySQL.Async.fetchAll('Select * from users WHERE identifier = @identifier', {['@identifier'] = identifier}, function(result)
-    --     TriggerClientEvent('racing:setCrypto', usource, result[1].racecrypto)
-    -- end)
+    if RacingConfig.crypto then
+        identifier = source
+        local usource = source
+        MySQL.Async.fetchAll('Select * from users WHERE identifier = @identifier', {['@identifier'] = identifier}, function(result)
+            TriggerClientEvent('racing:setCrypto', usource, result[1].racecrypto)
+        end)
+    end
 end)
 
 RegisterServerEvent('racing:sendMessageToRacers')

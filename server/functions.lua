@@ -43,6 +43,7 @@ end
 
 function distributeCrypto(i)
     local distributed = {}
+    local fastestLap = nil
     for x = 1, 3 do
         local place = nil
         local lowestTime = nil
@@ -50,6 +51,9 @@ function distributeCrypto(i)
             if (isempty(lowestTime) or (archiveRaces[i][y].total_time ~='DNF' and TimeStamp(archiveRaces[i][y].total_time) < lowestTime)) and setNotContains(distributed,archiveRaces[i][y].identifier) then 
                 place = y
                 lowestTime = TimeStamp(archiveRaces[i][y].total_time)
+            end
+            if (isempty(fastestLap) or (archiveRaces[i][y].total_time ~='DNF' and TimeStamp(archiveRaces[i][y].best_lap) < fastestLap)) then
+                fastestLap = TimeStamp(archiveRaces[i][y].best_lap)
             end
         end
         if not isempty(place) then
@@ -71,12 +75,14 @@ function distributeCrypto(i)
         end
         -- check if this time was the fastest lap for the track
         MySQL.Async.fetchAll('SELECT * FROM racing_tracktimes WHERE track_id = @trackId Order By track_id Desc, best_lap Desc Limit 1', {['@trackId'] = archiveConfigs[i].id}, function(results)
-            if #results > 0 and results[1].identifier == distributed[1].identifier and distributed[1].bestLap == results[1].best_lap then 
-                MySQL.Async.execute('UPDATE users SET `racecrypto` =  racecrypto + @crypto WHERE identifier = @identifier',
-                {
-                    ['@identifier'] = distributed[1].identifier,
-                    ['@crypto'] = (RacingConfig.cryptoPayout / 2)
-                })
+            if #results > 0 then 
+                if TimeStamp(results[1].bestLap) == fastestLap then
+                    MySQL.Async.execute('UPDATE users SET `racecrypto` =  racecrypto + @crypto WHERE identifier = @identifier',
+                    {
+                        ['@identifier'] = results[1].identifier,
+                        ['@crypto'] = (tonumber(RacingConfig.cryptoPayout) / 5)
+                    })
+                end
             end
         end)
     end
@@ -89,15 +95,15 @@ function alertPlayers(raceConf)
     end
 end
 
-function triggerPoliceNotification(postal,street)
-    if RacingConfig.notifyPD then
-        local percent = RacingConfig.notifyChance
-        local chance = math.fmod(GetGameTimer(),100)
-        if chance <= percent then
-            exports["fiya-script"]:triggerCADAlertSystem('race',postal,'Street Race',street) 
-        end
-    end
-end
+-- function triggerPoliceNotification(postal,street)
+--     if RacingConfig.notifyPD then
+--         local percent = RacingConfig.notifyChance
+--         local chance = math.fmod(GetGameTimer(),100)
+--         if chance <= percent then
+--             exports["fiya-script"]:triggerCADAlertSystem('race',postal,'Street Race',street) 
+--         end
+--     end
+-- end
 
 function setNotContains(table,value)
     for x = 1, #table do

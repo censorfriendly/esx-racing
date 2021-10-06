@@ -121,6 +121,18 @@ RegisterCommand("raceApp",function(source,args)
 	end
 end)
 
+RegisterCommand("raceApp:quit",function(source,args)
+	RemoveBlip(checkpoint[checkPos])
+	checkPos = checkPos + 1
+	RemoveBlip(checkpoint[checkPos])
+	checkPos = checkPos + 1
+	RemoveBlip(checkpoint[checkPos])
+	resetFlags()
+	SendNUIMessage({
+		dnf = true
+	})
+end)
+
 RegisterNetEvent("racing:openApp")
 AddEventHandler("racing:openApp", function()
 	openApp()
@@ -322,10 +334,14 @@ RegisterNUICallback('joinRace', function(params, cb)
 end)
 
 RegisterNUICallback('startRace', function(params, cb)
-	
-	local p = exports['nearest-postal']:getPostal()
-	local street = GetStreetAndZone()
-	TriggerServerEvent('racing:start',params.raceId,p,street)
+	TriggerServerEvent('racing:start',params.raceId)
+	if RacingConfig.notifyPD then
+        local percent = RacingConfig.notifyChance
+        local chance = math.fmod(GetGameTimer(),100)
+        if chance <= percent then
+            TriggerEvent('racing:policeAlert')
+        end
+    end
 	cb('ok');
 end)
 
